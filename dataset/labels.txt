@@ -1,3 +1,0 @@
-BaseballBat
-Gun
-Knife

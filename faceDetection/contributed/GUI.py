@@ -1,19 +1,24 @@
 import tkinter as tk
 from tkinter import ttk
+import tkinter.messagebox
 import cv2
 from PIL import Image
 from PIL import ImageTk
-
+import real_time_face_recognition as rt
+import threading, queue
+import face
 #pip install tk
 #pip install python-opencv
 #pip install pillow
+
+
 
 def MainWindow():
     
     #Création d'une fenêtre avec icône, titre et taille
     
     window = tk.Tk()    
-    window.wm_iconbitmap('fpms.ico')
+    window.wm_iconbitmap('@fpms.xbm')
     window.title("EDGE IA")
     window.geometry('1040x480')
     
@@ -87,15 +92,42 @@ def Tracking(root, cap, photo):
     
     #La fonction est rappelée toutes les 5 millisecondes
     root.after(5, lambda : Tracking(root,cap,photo))
-    
+
+def launchSampler(video_capture, q, entryLabel):
+    if entryLabel == "":
+        tk.messagebox.showinfo('Message', 'Le label ne peut pas être vide')
+    else:
+        threading.Thread(target=rt.captureSamples, args=(video_capture, q, entryLabel,)).start()
+
+
+def launchEvaluator(video_capture, q, face_recognition):
+    threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
+
+
 def CamWindow():
     
     root = tk.Tk()
     
-    root.wm_iconbitmap('fpms.ico')
+    root.wm_iconbitmap('@fpms.xbm')
     root.title("EDGE IA")
     root.geometry('1040x480')
-    
+
+    q = queue.Queue()
+    stateText = ""
+    q.put(stateText)
+
+    #=======VARIABLES POUR LA DÉTECTION D'OBJETS
+
+    print("la version de cv2 : ", cv2.__version__)
+
+    net = cv2.dnn.readNet(r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.weights", r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.cfg")
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+
+    model = cv2.dnn_DetectionModel(net)
+    model.setInputParams(size=(416, 416), scale=1 / 255)
+
+
     #On capture la vidéo du périphérique 0 (webcam intégrée)
     cap = cv2.VideoCapture(0)
 
@@ -135,17 +167,21 @@ def CamWindow():
     entryLabel = tk.ttk.Entry(root, width = 35)
     entryLabel.place(x=730, y=250)
     
-    btn    = tk.ttk.Button(root, text='Create new profile', width = 34)
-    btn.place(x=730, y = 300, height = 55)
-    
+    btn_create    = tk.ttk.Button(root, text='Créer un nouveau profil', width = 34, command=lambda : launchSampler(cap, q, entryLabel.get()))
+    btn_create.place(x=730, y = 280, height = 35)
+
+    btn_evalutate   = tk.ttk.Button(root, text="Tester l'accès", width = 34, command=lambda : launchEvaluator(cap, q, face_recognition))
+    btn_evalutate.place(x=730, y = 400, height = 35)
+
     statusbar = tk.Label(root, text="Welcome to FPMs Edge IA Video Surveillance System", relief = 'sunken', anchor = 'w', font = 'Times 10 italic')
     statusbar.pack(side=tk.BOTTOM, fill = tk.X)
     
     
 
     #►►►► START ◄◄◄◄
-
-    Tracking(root, cap, photo) #On l'update la première fois
+    face_recognition = face.Recognition()
+    #Tracking(root, cap, photo) #On l'update la première fois
+    rt.processFrame(root, cap, photo, face_recognition, q, model)
     root.mainloop()
     
     #►►►► STOP ◄◄◄◄

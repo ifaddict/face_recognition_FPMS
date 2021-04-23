@@ -110,8 +110,8 @@ def retrain(classifier_filename, data_dir, model, image_size=160, seed=666, min_
             reloaded = True
 
 
-def captureSamples(capture, frameQueue):
-    name = input("Entrez votre nom \n")
+def captureSamples(capture, frameQueue, name):
+    NUMBER_OF_SAMPLES = 30
     numero=1
     frame_no = 0
     detection = face.Detection()
@@ -136,7 +136,7 @@ def captureSamples(capture, frameQueue):
                 im.save(samplesPath + str(numero) + ".png")
                 numero += 1
 
-                if numero == 10:
+                if numero == NUMBER_OF_SAMPLES:
                     break
                 if cv2.waitKey(1) == ord(' '):
                     break
@@ -155,8 +155,6 @@ def captureSamples(capture, frameQueue):
 
 
 def evaluateAcess(capture, frameQueue, face_recognition):
-    #si l'identité est connue durant 10 frames alors on autorise l'accès
-    print("here")
     changeText(frameQueue, "Test de l'acces")
     count = 0
     while capture.isOpened():
@@ -193,74 +191,69 @@ def add_overlays(frame, faces, frame_rate):
                 thickness=2, lineType=2)
 
 
-def main(args):
+def processFrame(root, video_capture, photo, face_recognition, q, model):
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
     frame_rate = 0
     frame_count = 0
     reloaded = False
-    q = queue.Queue()
-    stateText = ""
-    q.put(stateText)
-    video_capture = cv2.VideoCapture(0)
-    face_recognition = face.Recognition()
+
+    CONFIDENCE_THRESHOLD = 0.5
+    NMS_THRESHOLD = 0.4
+    COLORS = [(0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
+    class_names = ["BaseballBat", "Gun", "Knife"]
+
     start_time = time.time()
 
-    if args.debug:
-        print("Debug enabled")
-        face.debug = True
+    ret, frame = video_capture.read()
 
-    while True:
-        # Capture frame-by-frame
-        ret, frame = video_capture.read()
+    classes, scores, boxes = model.detect(frame, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
+    if (frame_count % frame_interval) == 0:
+        faces = face_recognition.identify(frame)
 
-        if (frame_count % frame_interval) == 0:
-            faces = face_recognition.identify(frame)
+        # Check our current fps
+        end_time = time.time()
+        if (end_time - start_time) > fps_display_interval:
+            frame_rate = int(frame_count / (end_time - start_time))
+            start_time = time.time()
+            frame_count = 0
+        for (classid, score, box) in zip(classes, scores, boxes):
+            color = COLORS[int(classid) % len(COLORS)]
+            label = "%s : %f" % (class_names[classid[0]], score)
+            cv2.rectangle(frame, box, color, 2)
+            cv2.putText(frame, label, (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-            # Check our current fps
-            end_time = time.time()
-            if (end_time - start_time) > fps_display_interval:
-                frame_rate = int(frame_count / (end_time - start_time))
-                start_time = time.time()
-                frame_count = 0
-
-        add_overlays(frame, faces, frame_rate)
-        if cv2.waitKey(1) == ord('q'):
-            threading.Thread(target=captureSamples, args=(video_capture, q,)).start()
-            #on lance un thread qui réentraine le modèle pendant que la vidéo continue
-
-        if cv2.waitKey(33) == ord('a'):
-            print("start")
-            threading.Thread(target=evaluateAcess, args=(video_capture, q,face_recognition,)).start()
-
-        if reloaded == True:
-            face_recognition = face.Recognition()
-            print("Modèle rechargé")
-            reloaded = False
-        frame_count += 1
-        stateText = q.get()
-        q.put(stateText)
-        wHeight = video_capture.get(4)
-        cv2.putText(frame, stateText, (10, int(wHeight)-10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0),
-                    thickness=2, lineType=2)
-        cv2.imshow('Video', frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    # When everything is done, release the capture
-    video_capture.release()
-    cv2.destroyAllWindows()
+    add_overlays(frame, faces, frame_rate)
 
 
-def parse_arguments(argv):
-    parser = argparse.ArgumentParser()
 
-    parser.add_argument('--debug', action='store_true',
-                        help='Enable some debug outputs.')
-    return parser.parse_args(argv)
+    #ligne pour lancer le thread de la capture de samples et du réentrainement
+    #threading.Thread(target=captureSamples, args=(video_capture, q,)).start()
+
+    #ligne pour lancer le thread de l'évalutation de l'accès.
+    #threading.Thread(target=evaluateAcess, args=(video_capture, q,face_recognition,)).start()
+
+    if reloaded == True:
+        face_recognition = face.Recognition()
+        print("Modèle rechargé")
+        reloaded = False
+    frame_count += 1
+    stateText = q.get()
+    q.put(stateText)
+    wHeight = video_capture.get(4)
+    cv2.putText(frame, stateText, (10, int(wHeight)-10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0),
+                thickness=2, lineType=2)
+
+    # on convertit la frame en image PIL et on la paste sur l'interface
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(frame)
+    photo.paste(image)
+
+    #La fonction est rappelée toutes les 5 millisecondes
+    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q, model))
+
 
 
 if __name__ == '__main__':
-    main(parse_arguments(sys.argv[1:]))
+    processFrame()
