@@ -162,9 +162,12 @@ def evaluateAcess(capture, frameQueue, face_recognition):
         faces = face_recognition.identify(frame)
         if len(faces) == 1:
             if faces[0].name is not None:
-                count += 1
-            else:
-                count = 0
+                if faces[0].name != "Inconnu":
+                    changeText(frameQueue, "Visage connu detecte")
+                    count += 1
+                else:
+                    changeText(frameQueue, "Visage Inconnu, accès refusé")
+                    count = 0
         else:
             changeText(frameQueue, "Une seule personne autorisee")
             count = 0
@@ -224,14 +227,6 @@ def processFrame(root, video_capture, photo, face_recognition, q, model):
             cv2.putText(frame, label, (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     add_overlays(frame, faces, frame_rate)
-
-
-
-    #ligne pour lancer le thread de la capture de samples et du réentrainement
-    #threading.Thread(target=captureSamples, args=(video_capture, q,)).start()
-
-    #ligne pour lancer le thread de l'évalutation de l'accès.
-    #threading.Thread(target=evaluateAcess, args=(video_capture, q,face_recognition,)).start()
 
     if reloaded == True:
         face_recognition = face.Recognition()

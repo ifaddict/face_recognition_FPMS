@@ -13,59 +13,15 @@ import face
 
 
 
-def MainWindow():
-    
-    #Création d'une fenêtre avec icône, titre et taille
-    
-    window = tk.Tk()    
-    window.wm_iconbitmap('@fpms.xbm')
-    window.title("EDGE IA")
-    window.geometry('1040x480')
-    
-    #Création d'un canvas pour y mettre une image de background
-    
-    can = tk.Canvas(window, width = 1040, height = 480, bg = "#377aff")
-    bg = tk.PhotoImage(file="bg.gif")
-    can.create_image(0,0, anchor = 'nw', image = bg)
-    can.place(x=0,y=0)
-    
-    #Username et Password demandés avec password caché
-
-    labelUsername   = tk.Label(window, text="Username : ", bg = "#377aff", font = ('times',25,'bold'))
-    labelUsername.place(x=200,y=100)
-    
-    entryUsername = tk.ttk.Entry(window, width = 35)
-    entryUsername.place(x=400, y=110)
-    
-    labelPassword   = tk.Label(window, text='Password : ', bg = "#377aff", font = ('times',25,'bold'))
-    labelPassword.place(x=200,y=200)
-    
-    entryPassword =tk.ttk.Entry(window, show="*", width = 35)
-    entryPassword.place(x=400, y=210)
-    
-    #Bouton pour se connecter. Ce bouton appelle la fonction Verification qui refusera l'accès
-    #Si l'username ou le mot de passe est incorrect.
-
-    
-    login = tk.Button(window, text ="Log in",  
-        command = lambda : Verification(entryUsername,window), fg ="white", bg ="blue",  
-        width = 34, height = 2, activebackground = "dodger blue",  
-        font =('times', 15, ' bold ')) 
-    login.place(x = 200, y = 300)
-    
-    #Start
-    
-    window.mainloop()
-    
 
 def Verification(txt,window):
-    
+
     #Infos bonnes = accès au système
-    
+
     if txt.get() == 'admin' :
         window.destroy()
         CamWindow()
-    
+
     else :
         lblError = tk.Label(window, text = '     Wrong username or password     ', width = 34,
                             height = 2, fg = 'red', bg = 'white', font = ('times',15,'bold'))
@@ -158,23 +114,31 @@ def CamWindow():
     canvas2.create_image((400,0), image = imgFpms, anchor='ne')
     
     info    = tk.Label(root, text="Visage inconnu ? \n Choisissez un nom et \n placez-vous devant la \n caméra",
-                       bg = 'steel blue', fg = 'red', font = ('times',15,'bold'))
+                       bg = 'steel blue', fg = 'black', font = ('times',15,'bold'))
     info.place(x= 660, y=30)
-    
+
     label   = tk.Label(root, text="Label : ", bg = "#7a86ac")
-    label.place(x=660, y=250)
-    
-    entryLabel = tk.ttk.Entry(root, width = 35)
-    entryLabel.place(x=730, y=250)
-    
-    btn_create    = tk.ttk.Button(root, text='Créer un nouveau profil', width = 34, command=lambda : launchSampler(cap, q, entryLabel.get()))
-    btn_create.place(x=730, y = 280, height = 35)
+    label.place(x=660, y=200)
 
-    btn_evalutate   = tk.ttk.Button(root, text="Tester l'accès", width = 34, command=lambda : launchEvaluator(cap, q, face_recognition))
-    btn_evalutate.place(x=730, y = 400, height = 35)
+    entryLabel = tk.ttk.Entry(root, width=35)
+    entryLabel.place(x=730, y=200)
 
-    statusbar = tk.Label(root, text="Welcome to FPMs Edge IA Video Surveillance System", relief = 'sunken', anchor = 'w', font = 'Times 10 italic')
-    statusbar.pack(side=tk.BOTTOM, fill = tk.X)
+    code = tk.Label(root, text="Code : ", bg="#7a86ac")
+    code.place(x=660, y=230)
+    entryCode = tk.ttk.Entry(root, width=35)
+    entryCode.place(x=730, y=230)
+
+    btn_create = tk.ttk.Button(root, text='Créer un nouveau profil', width=34,
+                               command=lambda: launchSampler(cap, q, entryLabel.get()))
+    btn_create.place(x=730, y=280, height=35)
+
+    btn_evalutate = tk.ttk.Button(root, text="Tester l'accès", width=34,
+                                  command=lambda: launchEvaluator(cap, q, face_recognition))
+    btn_evalutate.place(x=730, y=400, height=35)
+
+    statusbar = tk.Label(root, text="Welcome to FPMs Edge IA Video Surveillance System", relief='sunken', anchor='w',
+                         font='Times 10 italic')
+    statusbar.pack(side=tk.BOTTOM, fill=tk.X)
     
     
 
@@ -190,4 +154,4 @@ def CamWindow():
     
 if __name__ == "__main__":
     
-    MainWindow()
+    CamWindow()
