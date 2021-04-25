@@ -76,12 +76,12 @@ def CamWindow():
 
     print("la version de cv2 : ", cv2.__version__)
 
-#    net = cv2.dnn.readNet(r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.weights", r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.cfg")
-#    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-#    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+#   net = cv2.dnn.readNet(r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.weights", r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.cfg")
+#   net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+#   net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
 
-	model = None
-#    model.setInputParams(size=(416, 416), scale=1 / 255)
+    model = None
+#   model.setInputParams(size=(416, 416), scale=1 / 255)
 
     #On capture la vidéo du périphérique 0 (webcam intégrée)
     cap = cv2.VideoCapture(0)
@@ -144,7 +144,7 @@ def CamWindow():
     #►►►► START ◄◄◄◄
     face_recognition = face.Recognition()
     #Tracking(root, cap, photo) #On l'update la première fois
-    #rt.processFrame(root, cap, photo, face_recognition, q, model)
+    rt.processFrame(root, cap, photo, face_recognition, q, model)
     root.mainloop()
     
     #►►►► STOP ◄◄◄◄
