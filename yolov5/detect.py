@@ -19,9 +19,11 @@ def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
-        ('rtsp://', 'rtmp://', 'http://'))
+        ('rtsp://', 'rtmp://', 'http://')) #True when real-time
 
-    # Directories
+
+
+    # Directories   --------  Not used for real-time detection
     save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
     (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
@@ -37,7 +39,7 @@ def detect(save_img=False):
     if half:
         model.half()  # to FP16
 
-    # Second-stage classifier
+    # Second-stage classifier    -------  Not used for real-time
     classify = False
     if classify:
         modelc = load_classifier(name='resnet101', n=2)  # initialize
@@ -55,7 +57,6 @@ def detect(save_img=False):
     # Get names and colors
     names = model.module.names if hasattr(model, 'module') else model.names
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
-
     # Run inference
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
@@ -66,6 +67,9 @@ def detect(save_img=False):
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
+        print(dataset)
+        print(path, img, im0s, vid_cap)
+        input()
 
         # Inference
         t1 = time_synchronized()
@@ -102,7 +106,7 @@ def detect(save_img=False):
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-                    if save_txt:  # Write to file
+                    if save_txt:  # Write to file -------- Not used for real-time
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
                         with open(txt_path + '.txt', 'a') as f:
@@ -120,7 +124,7 @@ def detect(save_img=False):
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
 
-            # Save results (image with detections)
+            # Save results (image with detections) ------ Not used for real-time
             if save_img:
                 if dataset.mode == 'image':
                     cv2.imwrite(save_path, im0)
