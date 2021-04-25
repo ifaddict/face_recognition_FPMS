@@ -210,7 +210,6 @@ def processFrame(root, video_capture, photo, face_recognition, q, model):
 
     ret, frame = video_capture.read()
 
-    #classes, scores, boxes = model.detect(frame, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
     if (frame_count % frame_interval) == 0:
         faces = face_recognition.identify(frame)
 
@@ -220,11 +219,6 @@ def processFrame(root, video_capture, photo, face_recognition, q, model):
             frame_rate = int(frame_count / (end_time - start_time))
             start_time = time.time()
             frame_count = 0
-        #for (classid, score, box) in zip(classes, scores, boxes):
-            #color = COLORS[int(classid) % len(COLORS)]
-            #label = "%s : %f" % (class_names[classid[0]], score)
-            #cv2.rectangle(frame, box, color, 2)
-            #cv2.putText(frame, label, (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     add_overlays(frame, faces, frame_rate)
 
