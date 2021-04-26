@@ -67,9 +67,6 @@ def detect(save_img=False):
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-        print(dataset)
-        print(path, img, im0s, vid_cap)
-        input()
 
         # Inference
         t1 = time_synchronized()
