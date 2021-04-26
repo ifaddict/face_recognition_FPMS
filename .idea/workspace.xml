@@ -20,64 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d8938e15-c965-41ea-aa3b-36c9e1d40323" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/backup_recognition.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/bg.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/detection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/fpms.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/fpmsbg.PNG" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/yolov4-custom.cfg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/faceDetection/contributed/yolov4-custom.weights" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Graphical UI/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Graphical UI/GUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/6.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/6.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/7.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/7.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/8.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/8.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/9.png" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/PERSONS_ALIGNED/selim/9.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/offline_face_recognition.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/real_time_face_recognition.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/real_time_face_recognition.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/model_checkpoints/my_classifier.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/model_checkpoints/my_classifier.pkl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/src/test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/align_dataset.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/align_dataset.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/align_dlib.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/cacd2000_split_identities.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/dataset_read_speed.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/deepdream.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/detect_face_v1.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/detect_face_v2.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/download_vgg_face_dataset.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/funnel_dataset.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/invariance_test.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/mnist_center_loss.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/mnist_noise_labels.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/mtcnn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/mtcnn_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/mtcnn_test_pnet_dbg.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/network.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/nn2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/nn3.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/nn4.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/nn4_small2_v1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/pilatus800.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/random_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/rename_casia_directories.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/seed_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/select_triplets_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/test1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/test_align.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/test_invariance_on_lfw.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/vggface16.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/vggverydeep19.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/visualize.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/visualize_vgg_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/faceDetection/tmp/visualize_vggface.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/objetDetection/detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/objetDetection/detection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,18 +39,43 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/faceDetection/contributed" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\YOLO-object-detection-with-OpenCV-master\yolo-coco" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\jyann\face_recognition_FPMS\faceDetection\contributed" />
       <recent name="C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed" />
       <recent name="C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\YOLO-object-detection-with-OpenCV-master\yolo-coco" />
+    </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.GUI">
+    <configuration name="GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="face_recognition_FPMS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/faceDetection/contributed" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/faceDetection/contributed/GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="objectDetector" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="face_recognition_FPMS" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -119,6 +88,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/objectDetector.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -130,6 +100,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.GUI" />
         <item itemvalue="Python.objectDetector" />
       </list>
     </recent_temporary>
@@ -142,8 +113,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1614257806685</updated>
+      <workItem from="1619438484923" duration="472000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
