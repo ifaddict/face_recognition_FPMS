@@ -194,17 +194,13 @@ def add_overlays(frame, faces, frame_rate):
                 thickness=2, lineType=2)
 
 
-def processFrame(root, video_capture, photo, face_recognition, q, model):
+def processFrame(root, video_capture, photo, face_recognition, q):
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
     frame_rate = 0
     frame_count = 0
     reloaded = False
 
-    CONFIDENCE_THRESHOLD = 0.5
-    NMS_THRESHOLD = 0.4
-    COLORS = [(0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
-    class_names = ["BaseballBat", "Gun", "Knife"]
 
     start_time = time.time()
 
@@ -217,7 +213,6 @@ def processFrame(root, video_capture, photo, face_recognition, q, model):
         end_time = time.time()
         if (end_time - start_time) > fps_display_interval:
             frame_rate = int(frame_count / (end_time - start_time))
-            start_time = time.time()
             frame_count = 0
 
     add_overlays(frame, faces, frame_rate)

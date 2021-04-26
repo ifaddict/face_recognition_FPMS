@@ -1,16 +1,120 @@
+import argparse
+import random
+import time
+
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import cv2
 from PIL import Image
 from PIL import ImageTk
+
 import real_time_face_recognition as rt
 import threading, queue
 import face
-#pip install tk
-#pip install python-opencv
-#pip install pillow
+import torch
+import torch.backends.cudnn as cudnn
 
+from models.experimental import attempt_load
+from utils.datasets import LoadStreams
+from utils.general import check_img_size, check_imshow, non_max_suppression, scale_coords, set_logging
+from utils.plots import plot_one_box
+from utils.torch_utils import select_device, time_synchronized
+
+
+
+def objectDetect(photo):
+
+    #------------- Begin work in progress --------------
+
+    #global objetState
+
+    #if objetState is not True:
+        #return
+
+    #------------- End work in progess -----------------
+
+    source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
+    webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
+        ('rtsp://', 'rtmp://', 'http://')) # True when real-time.
+
+
+    # Initialize
+    set_logging()
+    device = select_device(opt.device)
+    half = device.type != 'cpu'  # half precision only supported on CUDA
+
+    # Load model
+    model = attempt_load(weights, map_location=device)  # load FP32 model
+    stride = int(model.stride.max())  # model stride
+    imgsz = check_img_size(imgsz, s=stride)  # check img_size
+    if half:
+        model.half()  # to FP16
+
+    # Set Dataloader
+    view_img = check_imshow()
+    cudnn.benchmark = True  # set True to speed up constant image size inference
+    dataset = LoadStreams(source, img_size=imgsz, stride=stride)
+
+    # Get names and colors
+    names = model.module.names if hasattr(model, 'module') else model.names
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
+    # Run inference
+    if device.type != 'cpu':
+        model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
+    t0 = time.time()
+
+
+    for path, img, im0s, vid_cap in dataset: #Webcam Stream
+        img = torch.from_numpy(img).to(device)
+        img = img.half() if half else img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
+
+        # Inference
+        t1 = time_synchronized()
+        pred = model(img, augment=opt.augment)[0]
+
+        # Apply NMS
+        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        t2 = time_synchronized()
+
+        # Process detections
+        for i, det in enumerate(pred):  # detections per image
+            if webcam:  # batch_size >= 1
+                p, s, im0, frame = path[i], '%g: ' % i, im0s[i].copy(), dataset.count
+            else:
+                p, s, im0, frame = path, '', im0s, getattr(dataset, 'frame', 0)
+
+
+            s += '%gx%g ' % img.shape[2:]  # print string
+            if len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+
+                # Print results
+                for c in det[:, -1].unique():
+                    n = (det[:, -1] == c).sum()  # detections per class
+                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+
+                # Write results
+                for *xyxy, conf, cls in reversed(det): # Add bbox to image
+                        label = f'{names[int(cls)]} {conf:.2f}'
+                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=2)
+
+            # Print time (inference + NMS)
+            print(f'{s}Done. ({t2 - t1:.3f}s)')
+
+            # Stream results
+            if view_img:
+
+                frame = cv2.cvtColor(im0, cv2.COLOR_BGR2RGB)
+                image = Image.fromarray(frame)
+                photo.paste(image)
+                cv2.waitKey(1)  # 1 millisecond
+
+    print(f'Done. ({time.time() - t0:.3f}s)')
 
 
 
@@ -59,6 +163,18 @@ def launchSampler(video_capture, q, entryLabel):
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
+def switch(root,cap,photo,face_recognition,q, objetThread, visageThread):
+
+
+    #--------------- Work in progess ---------------
+
+    if objetThread.is_alive():
+        global objetState
+        objetState = False
+
+        rt.processFrame(root,cap,photo,face_recognition,q)
+
+
 
 def CamWindow():
     
@@ -72,18 +188,6 @@ def CamWindow():
     stateText = ""
     q.put(stateText)
 
-    #=======VARIABLES POUR LA DÉTECTION D'OBJETS
-
-    print("la version de cv2 : ", cv2.__version__)
-
-#   net = cv2.dnn.readNet(r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.weights", r"C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\faceDetection\contributed\yolov4-custom.cfg")
-#   net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-#   net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-
-    model = None
-#   model.setInputParams(size=(416, 416), scale=1 / 255)
-
-    #On capture la vidéo du périphérique 0 (webcam intégrée)
     cap = cv2.VideoCapture(0)
 
     # On lit la première frame
@@ -135,6 +239,17 @@ def CamWindow():
                                   command=lambda: launchEvaluator(cap, q, face_recognition))
     btn_evalutate.place(x=730, y=400, height=35)
 
+    #--------------- Work in progress -----------------
+
+    btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
+                               command=lambda: switch(root,cap,photo,face_recognition, q, objetThread, visageThread))
+
+    btn_switch.place(x=730, y=340, height=35)
+
+    #--------------- End work in progress -------------------
+
+
+
     statusbar = tk.Label(root, text="Welcome to FPMs Edge IA Video Surveillance System", relief='sunken', anchor='w',
                          font='Times 10 italic')
     statusbar.pack(side=tk.BOTTOM, fill=tk.X)
@@ -142,9 +257,21 @@ def CamWindow():
     
 
     #►►►► START ◄◄◄◄
+
     face_recognition = face.Recognition()
-    #Tracking(root, cap, photo) #On l'update la première fois
-    rt.processFrame(root, cap, photo, face_recognition, q, model)
+
+    #---------------- Work in Progress -----------------
+
+    #global objetState
+    visageThread = threading.Thread(target=rt.processFrame, args=(root, cap, photo, face_recognition, q))
+    #objetState = True
+
+    #---------------- End work in Progress ------------------
+
+    objetThread = threading.Thread(target = objectDetect, args = (photo,))
+    objetThread.daemon = 1
+    objetThread.start()
+
     root.mainloop()
     
     #►►►► STOP ◄◄◄◄
@@ -152,5 +279,17 @@ def CamWindow():
     cap.release()
     
 if __name__ == "__main__":
-    
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--weights', nargs='+', type=str, default='testYaya.pt', help='model.pt path(s)')
+    parser.add_argument('--source', type=str, default='0', help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
+    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
+    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--view-img', action='store_true', help='display results')
+    parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
+    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+    parser.add_argument('--augment', action='store_true', help='augmented inference')
+    opt = parser.parse_args()
     CamWindow()
