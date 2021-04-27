@@ -196,12 +196,12 @@ def processFrameV2(photo, faceRecogQueue):
     dataset = LoadStreams(source, img_size=imgsz, stride=stride)
     t0 = time.time()
 
-    face_recognition = faceRecogQueue.get()
+    face_recognition = face.Recognition()
 
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
+        t2 = time.time()
         if _State is True:
             vid_cap.release()
-            faceRecogQueue.put(face_recognition)
             return
         img = im0s[0].copy()
         faces = face_recognition.identify(img)
@@ -211,8 +211,8 @@ def processFrameV2(photo, faceRecogQueue):
         frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(frame)
         photo.paste(image)
-        t1 = time.time()
-        print(f'{source}Done. ({t1 - t0:.3f}s)')
+        t3 = time.time()
+        print(f'{source} : Done. ({t3 - t2:.3f}s)')
 
 
 
