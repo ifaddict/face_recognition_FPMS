@@ -24,19 +24,18 @@ from utils.torch_utils import select_device, time_synchronized
 _State = True
 
 def initialiseYoloV5():
-    
+    pass
 
-    #------------- Begin work in progress --------------
+def objectDetect(photo):
+    # ------------- Begin work in progress --------------
 
     global _State
 
-
-    #------------- End work in progess -----------------
+    # ------------- End work in progess -----------------
 
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
-        ('rtsp://', 'rtmp://', 'http://')) # True when real-time.
-
+        ('rtsp://', 'rtmp://', 'http://'))  # True when real-time.
 
     # Initialize
     set_logging()
@@ -58,7 +57,6 @@ def initialiseYoloV5():
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
 
-def objectDetect(photo):
     dataset = LoadStreams(source, img_size=imgsz, stride=stride)
 
     # Get names and colors
@@ -126,9 +124,11 @@ def objectDetect(photo):
 
     print(f'Object detection aborted. ({time.time() - t0:.3f}s)')
 
-def processFrame(root, video_capture, photo, face_recognition, q):
+def processFrame(root, video_capture, photo, face_recognition, q, first = True):
     global _State
-    
+    if first :
+        face_recognition = face.Recognition()
+
     if _State is True:
         video_capture.release()
         return
@@ -147,10 +147,10 @@ def processFrame(root, video_capture, photo, face_recognition, q):
         video_capture.open(0)
 
     ret, frame = video_capture.read()
-    
+    faces = face_recognition.identify(frame)
     
     if (frame_count % frame_interval) == 0:
-        faces = face_recognition.identify(frame)
+
 
         # Check our current fps
         end_time = time.time()
@@ -178,7 +178,35 @@ def processFrame(root, video_capture, photo, face_recognition, q):
     photo.paste(image)
 
     #La fonction est rappelée toutes les 5 millisecondes
-    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q))
+    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q, False))
+
+def processFrameV2(photo, faceRecogQueue):
+    frame_interval = 3  # Number of frames after which to run face detection
+    fps_display_interval = 5  # seconds
+    frame_rate = 0
+    frame_count = 0
+    stride = 32
+    source, imgsz = opt.source, opt.img_size
+    dataset = LoadStreams(source, img_size=imgsz, stride=stride)
+    t0 = time.time()
+
+    face_recognition = faceRecogQueue.get()
+
+    for path, img, im0s, vid_cap in dataset: #Webcam Stream
+        if _State is True:
+            vid_cap.release()
+            faceRecogQueue.put(face_recognition)
+            return
+        img = im0s[0].copy()
+        faces = face_recognition.identify(img)
+        rt.add_overlays(img, faces, frame_rate)
+
+        # on convertit la frame en image PIL et on la paste sur l'interface
+        frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = Image.fromarray(frame)
+        photo.paste(image)
+        t1 = time.time()
+        print(f'{source}Done. ({t1 - t0:.3f}s)')
 
 
 
@@ -228,7 +256,7 @@ def launchSampler(video_capture, q, entryLabel):
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
-def switch(root,cap,photo,face_recognition,q):
+def switch(cap,photo,faceRecogQueue,q):
     #--------------- Work in progess ---------------
     
     global _State
@@ -237,8 +265,8 @@ def switch(root,cap,photo,face_recognition,q):
     _State = not _State #Switch the variable
 
     if _State is not True:
-        cap.release()    
-        visageThread = threading.Thread(target=processFrame, args=(root, cap, photo,face_recognition, q))
+        cap.release()
+        visageThread = threading.Thread(target=processFrameV2, args=(photo,faceRecogQueue))
         visageThread.start()
     
     else:
@@ -250,7 +278,8 @@ def switch(root,cap,photo,face_recognition,q):
 
 
 def CamWindow():
-    
+    faceRecogQueue = queue.Queue()
+
     root = tk.Tk()
     
     root.wm_iconbitmap('@fpms.xbm')
@@ -315,7 +344,7 @@ def CamWindow():
     #--------------- Work in progress -----------------
 
     btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
-                               command=lambda: switch(root,cap,photo,face_recognition, q))
+                               command=lambda: switch(cap, photo,faceRecogQueue, q))
 
     btn_switch.place(x=730, y=340, height=35)
 
@@ -332,12 +361,9 @@ def CamWindow():
     #►►►► START ◄◄◄◄
 
     face_recognition = face.Recognition()
+    faceRecogQueue.put(face_recognition)
 
-    #---------------- Work in Progress -----------------
     cap.release()
-
-
-    #---------------- End work in Progress ------------------
     
     objetThread = threading.Thread(target = objectDetect, args = (photo,))
     objetThread.start()
