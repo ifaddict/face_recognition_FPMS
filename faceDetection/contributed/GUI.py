@@ -101,7 +101,7 @@ def objectDetect(photo, model, device):
             else:
                 p, s, im0, frame = path, '', im0s, getattr(dataset, 'frame', 0)
     
-    
+
             s += '%gx%g ' % img.shape[2:]  # print string
             if len(det):
                 # Rescale boxes from img_size to im0 size
@@ -148,7 +148,9 @@ def processFrameV2(photo):
             vid_cap.release()
             return
         img = im0s[0].copy()
+
         faces = face_recognition.identify(img)
+
         rt.add_overlays(img, faces, frame_rate)
 
         # on convertit la frame en image PIL et on la paste sur l'interface
