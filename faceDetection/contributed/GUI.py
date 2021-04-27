@@ -24,15 +24,6 @@ from utils.torch_utils import select_device, time_synchronized
 _State = True
 
 def initialiseYoloV5():
-    pass
-
-def objectDetect(photo):
-    # ------------- Begin work in progress --------------
-
-    global _State
-
-    # ------------- End work in progess -----------------
-
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
         ('rtsp://', 'rtmp://', 'http://'))  # True when real-time.
@@ -44,8 +35,7 @@ def objectDetect(photo):
 
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
-    stride = int(model.stride.max())  # model stride
-    imgsz = check_img_size(imgsz, s=stride)  # check img_size
+
     if half:
         model.half()  # to FP16
 
@@ -57,14 +47,30 @@ def objectDetect(photo):
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
 
-    dataset = LoadStreams(source, img_size=imgsz, stride=stride)
 
-    # Get names and colors
+
+
+    return model, device
+
+
+def objectDetect(photo, model, device):
+
+    source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
+    webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
+        ('rtsp://', 'rtmp://', 'http://'))  # True when real-time.
+    # ------------- Begin work in progress --------------
+
     names = model.module.names if hasattr(model, 'module') else model.names
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
+    half = device.type != 'cpu'  # half precision only supported on CUDA
+    stride = int(model.stride.max())  # model stride
+    imgsz = check_img_size(imgsz, s=stride)  # check img_size
 
+    view_img = check_imshow()
+    global _State
     t0 = time.time()
-
+    # ------------- End work in progess -----------------
+    dataset = LoadStreams(source, img_size=imgsz, stride=stride)
 
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         if _State is not True: #Process frame only in asked to do so
@@ -256,7 +262,7 @@ def launchSampler(video_capture, q, entryLabel):
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
-def switch(cap,photo,faceRecogQueue,q):
+def switch(cap,photo,faceRecogQueue,model, device, q):
     #--------------- Work in progess ---------------
     
     global _State
@@ -267,11 +273,12 @@ def switch(cap,photo,faceRecogQueue,q):
     if _State is not True:
         cap.release()
         visageThread = threading.Thread(target=processFrameV2, args=(photo,faceRecogQueue))
+        print(visageThread.is_alive())
         visageThread.start()
     
     else:
         cap.release()
-        objetThread = threading.Thread(target = objectDetect, args = (photo,))
+        objetThread = threading.Thread(target = objectDetect, args = (photo,model, device))
         objetThread.start()
 
 
@@ -344,7 +351,7 @@ def CamWindow():
     #--------------- Work in progress -----------------
 
     btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
-                               command=lambda: switch(cap, photo,faceRecogQueue, q))
+                               command=lambda: switch(cap, photo,faceRecogQueue,model, device, q))
 
     btn_switch.place(x=730, y=340, height=35)
 
@@ -359,13 +366,13 @@ def CamWindow():
     
 
     #►►►► START ◄◄◄◄
-
+    model, device = initialiseYoloV5()
     face_recognition = face.Recognition()
     faceRecogQueue.put(face_recognition)
 
     cap.release()
     
-    objetThread = threading.Thread(target = objectDetect, args = (photo,))
+    objetThread = threading.Thread(target = objectDetect, args = (photo,model, device))
     objetThread.start()
     root.mainloop()
     
