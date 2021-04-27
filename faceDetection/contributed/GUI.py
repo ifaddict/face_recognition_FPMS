@@ -54,7 +54,7 @@ def initialiseYoloV5():
 
 
 def objectDetect(photo, model, device):
-
+    time.sleep(0.2)
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
         ('rtsp://', 'rtmp://', 'http://'))  # True when real-time.
@@ -65,8 +65,8 @@ def objectDetect(photo, model, device):
     half = device.type != 'cpu'  # half precision only supported on CUDA
     stride = int(model.stride.max())  # model stride
     imgsz = check_img_size(imgsz, s=stride)  # check img_size
+    
 
-    view_img = check_imshow()
     global _State
     t0 = time.time()
     # ------------- End work in progess -----------------
@@ -75,7 +75,6 @@ def objectDetect(photo, model, device):
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         if _State is not True: #Process frame only in asked to do so
             vid_cap.release()
-            print(vid_cap.isOpened())
             break
 
 
@@ -84,6 +83,7 @@ def objectDetect(photo, model, device):
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
+
             img = img.unsqueeze(0)
     
         # Inference
@@ -121,72 +121,16 @@ def objectDetect(photo, model, device):
             print(f'{s}Done. ({t2 - t1:.3f}s)')
     
             # Stream results
-            if view_img:
-    
-                frame = cv2.cvtColor(im0, cv2.COLOR_BGR2RGB)
-                image = Image.fromarray(frame)
-                photo.paste(image)
-                cv2.waitKey(1)  # 1 millisecond
+            frame = cv2.cvtColor(im0, cv2.COLOR_BGR2RGB)
+            image = Image.fromarray(frame)
+            photo.paste(image)
+            cv2.waitKey(1)  # 1 millisecond
 
     print(f'Object detection aborted. ({time.time() - t0:.3f}s)')
 
-def processFrame(root, video_capture, photo, face_recognition, q, first = True):
-    global _State
-    if first :
-        face_recognition = face.Recognition()
 
-    if _State is True:
-        video_capture.release()
-        return
-    
-    frame_interval = 3  # Number of frames after which to run face detection
-    fps_display_interval = 5  # seconds
-    frame_rate = 0
-    frame_count = 0
-    reloaded = False
-
-    
-    start_time = time.time()
-    
-    time.sleep(0.05)
-    if video_capture.isOpened() is not True :
-        video_capture.open(0)
-
-    ret, frame = video_capture.read()
-    faces = face_recognition.identify(frame)
-    
-    if (frame_count % frame_interval) == 0:
-
-
-        # Check our current fps
-        end_time = time.time()
-        if (end_time - start_time) > fps_display_interval:
-            frame_rate = int(frame_count / (end_time - start_time))
-            frame_count = 0
-
-    rt.add_overlays(frame, faces, frame_rate)
-
-    if reloaded == True:
-        face_recognition = face.Recognition()
-        print("Modèle rechargé")
-        reloaded = False
-    frame_count += 1
-    stateText = q.get()
-    q.put(stateText)
-    wHeight = video_capture.get(4)
-    cv2.putText(frame, stateText, (10, int(wHeight)-10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0),
-                thickness=2, lineType=2)
-
-    # on convertit la frame en image PIL et on la paste sur l'interface
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    image = Image.fromarray(frame)
-    photo.paste(image)
-
-    #La fonction est rappelée toutes les 5 millisecondes
-    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q, False))
-
-def processFrameV2(photo, faceRecogQueue):
+def processFrameV2(photo):
+    time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
     frame_rate = 0
@@ -212,7 +156,7 @@ def processFrameV2(photo, faceRecogQueue):
         image = Image.fromarray(frame)
         photo.paste(image)
         t3 = time.time()
-        print(f'{source} : Done. ({t3 - t2:.3f}s)')
+        print(f'{source}: Done. ({t3 - t2:.3f}s)')
 
 
 
@@ -262,7 +206,8 @@ def launchSampler(video_capture, q, entryLabel):
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
-def switch(cap,photo,faceRecogQueue,model, device, q):
+def switch(cap,photo,model, device, q):
+
     #--------------- Work in progess ---------------
     
     global _State
@@ -272,7 +217,7 @@ def switch(cap,photo,faceRecogQueue,model, device, q):
 
     if _State is not True:
         cap.release()
-        visageThread = threading.Thread(target=processFrameV2, args=(photo,faceRecogQueue))
+        visageThread = threading.Thread(target=processFrameV2, args=(photo,))
         print(visageThread.is_alive())
         visageThread.start()
     
@@ -351,7 +296,7 @@ def CamWindow():
     #--------------- Work in progress -----------------
 
     btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
-                               command=lambda: switch(cap, photo,faceRecogQueue,model, device, q))
+                               command=lambda: switch(cap, photo,model, device, q))
 
     btn_switch.place(x=730, y=340, height=35)
 
@@ -360,6 +305,7 @@ def CamWindow():
 
 
     statusbar = tk.Label(root, text="Welcome to FPMs Edge IA Video Surveillance System", relief='sunken', anchor='w',
+
                          font='Times 10 italic')
     statusbar.pack(side=tk.BOTTOM, fill=tk.X)
     
@@ -367,8 +313,6 @@ def CamWindow():
 
     #►►►► START ◄◄◄◄
     model, device = initialiseYoloV5()
-    face_recognition = face.Recognition()
-    faceRecogQueue.put(face_recognition)
 
     cap.release()
     
