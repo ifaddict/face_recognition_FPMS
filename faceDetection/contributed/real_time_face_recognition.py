@@ -107,52 +107,10 @@ def retrain(classifier_filename, data_dir, model, image_size=160, seed=666, min_
             with open(classifier_filename, 'wb') as outfile:
                 pickle.dump((model, class_names), outfile)
             print('Saved classifier model to file "%s"' % classifier_filename_exp)
-            reloaded = True
 
 
 def captureSamples(capture, frameQueue, name):
-    NUMBER_OF_SAMPLES = 30
-    numero=1
-    frame_no = 0
-    detection = face.Detection()
-    changeText(frameQueue, "Echantillonage, veuillez mouvoir votre visage")
-    while capture.isOpened():
-        ret, image = capture.read()
-        frame_no += 1
-        if frame_no % 10 == 0:
-            faces = detection.find_faces(image)
-            print(faces)
-            if len(faces) == 1:
-                y = faces[0].bounding_box[0]
-                x = faces[0].bounding_box[1]
-                h = faces[0].bounding_box[2]
-                w = faces[0].bounding_box[3]
-                samplesPath = "../PERSONS_ALIGNED/" + name + "/"
-                if not os.path.exists(samplesPath):
-                    os.mkdir(samplesPath)
-                image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                cropped = resize(image[x:w, y:h, :], (182, 182))
-                im = Image.fromarray((cropped * 255).astype(np.uint8))
-                im.save(samplesPath + str(numero) + ".png")
-                numero += 1
-
-                if numero == NUMBER_OF_SAMPLES:
-                    break
-                if cv2.waitKey(1) == ord(' '):
-                    break
-
-    changeText(frameQueue, "Echantillonage finit")
-    time.sleep(2)
-    changeText(frameQueue, "Entrainement en cours, veuillez patienter")
-
-
     retrain("../model_checkpoints/my_classifier.pkl", "../PERSONS_ALIGNED", "../model_checkpoints/20180408-102900.pb")
-    changeText(frameQueue, "Entrainement finit")
-    time.sleep(2)
-    changeText(frameQueue, "")
-    global reloaded
-    reloaded = True
-
 
 def evaluateAcess(capture, frameQueue, face_recognition):
     face_recognition = face.Recognition()

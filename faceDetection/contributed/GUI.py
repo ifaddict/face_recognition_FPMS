@@ -1,4 +1,5 @@
 import argparse
+import os
 import random
 import time
 
@@ -8,7 +9,7 @@ import tkinter.messagebox
 import cv2
 from PIL import Image
 from PIL import ImageTk
-
+import numpy as np
 import real_time_face_recognition as rt
 import threading, queue
 import face
@@ -22,6 +23,8 @@ from utils.plots import plot_one_box
 from utils.torch_utils import select_device, time_synchronized
 
 _State = True
+sampling = False
+retrained = False
 
 def initialiseYoloV5():
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
@@ -129,7 +132,9 @@ def objectDetect(photo, model, device):
     print(f'Object detection aborted. ({time.time() - t0:.3f}s)')
 
 
-def processFrameV2(photo):
+def processFrameV2(photo, entryLabel):
+    global retrained
+    global sampling
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
@@ -139,6 +144,7 @@ def processFrameV2(photo):
     source, imgsz = opt.source, opt.img_size
     dataset = LoadStreams(source, img_size=imgsz, stride=stride)
     t0 = time.time()
+    numero = 0
 
     face_recognition = face.Recognition()
 
@@ -151,6 +157,27 @@ def processFrameV2(photo):
 
         faces = face_recognition.identify(img)
 
+        if sampling: #Altered in launchSampler()
+            print("Sampling...")
+            if len(faces) == 1 and faces[0].name == "Inconnu":
+                y = faces[0].bounding_box[0]
+                x = faces[0].bounding_box[1]
+                h = faces[0].bounding_box[2]
+                w = faces[0].bounding_box[3]
+                samplesPath = "../PERSONS_ALIGNED/" + entryLabel.get() + "/"
+                if not os.path.exists(samplesPath):
+                    os.mkdir(samplesPath)
+                image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                cropped = rt.resize(image[x:w, y:h, :], (182, 182))
+                im = Image.fromarray((cropped * 255).astype(np.uint8))
+                im.save(samplesPath + str(numero) + ".png")
+                numero += 1
+                print("Saved")
+                if numero == 30:
+                    print("Sampling done. Training...")
+                    sampling = False
+                    threading.Thread(target=retrain, args=()).start()
+
         rt.add_overlays(img, faces, frame_rate)
 
         # on convertit la frame en image PIL et on la paste sur l'interface
@@ -158,7 +185,21 @@ def processFrameV2(photo):
         image = Image.fromarray(frame)
         photo.paste(image)
         t3 = time.time()
-        print(f'{source}: Done. ({t3 - t2:.3f}s)')
+        #print(f'{source}: Done. ({t3 - t2:.3f}s)')
+
+        if numero == 30 and retrained:
+            print("Resetting model...")
+            visageThread = threading.Thread(target=processFrameV2, args=(photo, entryLabel))
+            visageThread.start()
+            retrained = False
+            break
+
+def retrain():
+    global retrained
+    rt.retrain("../model_checkpoints/my_classifier.pkl", "../PERSONS_ALIGNED", "../model_checkpoints/20180408-102900.pb")
+    retrained = True
+
+
 
 
 
@@ -199,16 +240,22 @@ def Tracking(root, cap, photo):
     root.after(5, lambda : Tracking(root,cap,photo))
 
 def launchSampler(video_capture, q, entryLabel):
+
+    global sampling
     if entryLabel == "":
         tk.messagebox.showinfo('Message', 'Le label ne peut pas être vide')
-    else:
-        threading.Thread(target=rt.captureSamples, args=(video_capture, q, entryLabel,)).start()
+        return
+    sampling = True
+    #else:
+        #threading.Thread(target=rt.captureSamples, args=(cap3, q, entryLabel,)).start()
+
+
 
 
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
-def switch(cap,photo,model, device, q):
+def switch(cap,photo,model, device, q, entryLabel):
 
     #--------------- Work in progess ---------------
     
@@ -218,13 +265,10 @@ def switch(cap,photo,model, device, q):
     _State = not _State #Switch the variable
 
     if _State is not True:
-        cap.release()
-        visageThread = threading.Thread(target=processFrameV2, args=(photo,))
-        print(visageThread.is_alive())
+        visageThread = threading.Thread(target=processFrameV2, args=(photo,entryLabel))
         visageThread.start()
     
     else:
-        cap.release()
         objetThread = threading.Thread(target = objectDetect, args = (photo,model, device))
         objetThread.start()
 
@@ -298,7 +342,7 @@ def CamWindow():
     #--------------- Work in progress -----------------
 
     btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
-                               command=lambda: switch(cap, photo,model, device, q))
+                               command=lambda: switch(cap, photo,model, device, q, entryLabel))
 
     btn_switch.place(x=730, y=340, height=35)
 
@@ -316,7 +360,6 @@ def CamWindow():
     #►►►► START ◄◄◄◄
     model, device = initialiseYoloV5()
 
-    cap.release()
     
     objetThread = threading.Thread(target = objectDetect, args = (photo,model, device))
     objetThread.start()
