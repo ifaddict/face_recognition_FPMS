@@ -23,15 +23,13 @@ from utils.torch_utils import select_device, time_synchronized
 
 _State = True
 
-def objectDetect(photo):
-
+def initialiseYoloV5():
+    
 
     #------------- Begin work in progress --------------
 
     global _State
 
-    #if objetState is not True:
-        #return
 
     #------------- End work in progess -----------------
 
@@ -55,20 +53,29 @@ def objectDetect(photo):
     # Set Dataloader
     view_img = check_imshow()
     cudnn.benchmark = True  # set True to speed up constant image size inference
+
+    # Run inference
+    if device.type != 'cpu':
+        model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
+
+def objectDetect(photo):
     dataset = LoadStreams(source, img_size=imgsz, stride=stride)
 
     # Get names and colors
     names = model.module.names if hasattr(model, 'module') else model.names
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
-    # Run inference
-    if device.type != 'cpu':
-        model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
+
     t0 = time.time()
 
 
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         if _State is not True: #Process frame only in asked to do so
+            vid_cap.release()
+            print(vid_cap.isOpened())
             break
+
+
+
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -123,6 +130,7 @@ def processFrame(root, video_capture, photo, face_recognition, q):
     global _State
     
     if _State is True:
+        video_capture.release()
         return
     
     frame_interval = 3  # Number of frames after which to run face detection
@@ -131,11 +139,16 @@ def processFrame(root, video_capture, photo, face_recognition, q):
     frame_count = 0
     reloaded = False
 
-
+    
     start_time = time.time()
+    
+    time.sleep(0.05)
+    if video_capture.isOpened() is not True :
+        video_capture.open(0)
 
     ret, frame = video_capture.read()
-
+    
+    
     if (frame_count % frame_interval) == 0:
         faces = face_recognition.identify(frame)
 
@@ -145,7 +158,7 @@ def processFrame(root, video_capture, photo, face_recognition, q):
             frame_rate = int(frame_count / (end_time - start_time))
             frame_count = 0
 
-    add_overlays(frame, faces, frame_rate)
+    rt.add_overlays(frame, faces, frame_rate)
 
     if reloaded == True:
         face_recognition = face.Recognition()
@@ -165,7 +178,7 @@ def processFrame(root, video_capture, photo, face_recognition, q):
     photo.paste(image)
 
     #La fonction est rappelée toutes les 5 millisecondes
-    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q, model))
+    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q))
 
 
 
@@ -215,7 +228,7 @@ def launchSampler(video_capture, q, entryLabel):
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
-def switch(root,cap,photo,face_recognition,q, objetThread, visageThread):
+def switch(root,cap,photo,face_recognition,q):
     #--------------- Work in progess ---------------
     
     global _State
@@ -224,9 +237,13 @@ def switch(root,cap,photo,face_recognition,q, objetThread, visageThread):
     _State = not _State #Switch the variable
 
     if _State is not True:
+        cap.release()    
+        visageThread = threading.Thread(target=processFrame, args=(root, cap, photo,face_recognition, q))
         visageThread.start()
     
     else:
+        cap.release()
+        objetThread = threading.Thread(target = objectDetect, args = (photo,))
         objetThread.start()
 
 
@@ -298,7 +315,7 @@ def CamWindow():
     #--------------- Work in progress -----------------
 
     btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
-                               command=lambda: switch(root,cap,photo,face_recognition, q, objetThread, visageThread))
+                               command=lambda: switch(root,cap,photo,face_recognition, q))
 
     btn_switch.place(x=730, y=340, height=35)
 
@@ -318,12 +335,11 @@ def CamWindow():
 
     #---------------- Work in Progress -----------------
     cap.release()
-    visageThread = threading.Thread(target=rt.processFrame, args=(root, cap, photo, face_recognition, q))
+
 
     #---------------- End work in Progress ------------------
     
     objetThread = threading.Thread(target = objectDetect, args = (photo,))
-    objetThread.daemon = 1
     objetThread.start()
     root.mainloop()
     

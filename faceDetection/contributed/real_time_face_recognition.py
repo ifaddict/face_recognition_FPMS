@@ -155,6 +155,7 @@ def captureSamples(capture, frameQueue, name):
 
 
 def evaluateAcess(capture, frameQueue, face_recognition):
+    face_recognition = face.Recognition()
     changeText(frameQueue, "Test de l'acces")
     count = 0
     while capture.isOpened():
