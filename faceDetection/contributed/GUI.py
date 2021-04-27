@@ -21,13 +21,14 @@ from utils.general import check_img_size, check_imshow, non_max_suppression, sca
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, time_synchronized
 
-
+_State = True
 
 def objectDetect(photo):
 
+
     #------------- Begin work in progress --------------
 
-    #global objetState
+    global _State
 
     #if objetState is not True:
         #return
@@ -66,55 +67,106 @@ def objectDetect(photo):
 
 
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
+        if _State is not True: #Process frame only in asked to do so
+            break
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-
+    
         # Inference
         t1 = time_synchronized()
         pred = model(img, augment=opt.augment)[0]
-
+    
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
         t2 = time_synchronized()
-
+    
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1
                 p, s, im0, frame = path[i], '%g: ' % i, im0s[i].copy(), dataset.count
             else:
                 p, s, im0, frame = path, '', im0s, getattr(dataset, 'frame', 0)
-
-
+    
+    
             s += '%gx%g ' % img.shape[2:]  # print string
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-
+    
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
+    
                 # Write results
                 for *xyxy, conf, cls in reversed(det): # Add bbox to image
                         label = f'{names[int(cls)]} {conf:.2f}'
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=2)
-
+    
             # Print time (inference + NMS)
             print(f'{s}Done. ({t2 - t1:.3f}s)')
-
+    
             # Stream results
             if view_img:
-
+    
                 frame = cv2.cvtColor(im0, cv2.COLOR_BGR2RGB)
                 image = Image.fromarray(frame)
                 photo.paste(image)
                 cv2.waitKey(1)  # 1 millisecond
 
-    print(f'Done. ({time.time() - t0:.3f}s)')
+    print(f'Object detection aborted. ({time.time() - t0:.3f}s)')
+
+def processFrame(root, video_capture, photo, face_recognition, q):
+    global _State
+    
+    if _State is True:
+        return
+    
+    frame_interval = 3  # Number of frames after which to run face detection
+    fps_display_interval = 5  # seconds
+    frame_rate = 0
+    frame_count = 0
+    reloaded = False
+
+
+    start_time = time.time()
+
+    ret, frame = video_capture.read()
+
+    if (frame_count % frame_interval) == 0:
+        faces = face_recognition.identify(frame)
+
+        # Check our current fps
+        end_time = time.time()
+        if (end_time - start_time) > fps_display_interval:
+            frame_rate = int(frame_count / (end_time - start_time))
+            frame_count = 0
+
+    add_overlays(frame, faces, frame_rate)
+
+    if reloaded == True:
+        face_recognition = face.Recognition()
+        print("Modèle rechargé")
+        reloaded = False
+    frame_count += 1
+    stateText = q.get()
+    q.put(stateText)
+    wHeight = video_capture.get(4)
+    cv2.putText(frame, stateText, (10, int(wHeight)-10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0),
+                thickness=2, lineType=2)
+
+    # on convertit la frame en image PIL et on la paste sur l'interface
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(frame)
+    photo.paste(image)
+
+    #La fonction est rappelée toutes les 5 millisecondes
+    root.after(5, lambda : processFrame(root, video_capture, photo, face_recognition, q, model))
+
 
 
 
@@ -164,15 +216,19 @@ def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
 def switch(root,cap,photo,face_recognition,q, objetThread, visageThread):
-
-
     #--------------- Work in progess ---------------
+    
+    global _State
+    #_State is True by default
+    
+    _State = not _State #Switch the variable
 
-    if objetThread.is_alive():
-        global objetState
-        objetState = False
+    if _State is not True:
+        visageThread.start()
+    
+    else:
+        objetThread.start()
 
-        rt.processFrame(root,cap,photo,face_recognition,q)
 
 
 
@@ -261,17 +317,14 @@ def CamWindow():
     face_recognition = face.Recognition()
 
     #---------------- Work in Progress -----------------
-
-    #global objetState
+    cap.release()
     visageThread = threading.Thread(target=rt.processFrame, args=(root, cap, photo, face_recognition, q))
-    #objetState = True
 
     #---------------- End work in Progress ------------------
-
+    
     objetThread = threading.Thread(target = objectDetect, args = (photo,))
     objetThread.daemon = 1
     objetThread.start()
-
     root.mainloop()
     
     #►►►► STOP ◄◄◄◄
