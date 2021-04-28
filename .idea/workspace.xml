@@ -20,7 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d8938e15-c965-41ea-aa3b-36c9e1d40323" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27-04-21_00_38__Default_Changelist_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27-04-21_00_38__Default_Changelist_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/faceDetection/contributed/face.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/face.py" afterDir="false" />
@@ -141,31 +140,7 @@
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
-  <component name="WindowStateProjectService">
-    <state width="1877" height="251" key="GridCell.Tab.0.bottom" timestamp="1619565731351">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="251" key="GridCell.Tab.0.bottom/0.0.1920.1040/-1280.0.1280.984@0.0.1920.1040" timestamp="1619565731351" />
-    <state width="1877" height="251" key="GridCell.Tab.0.center" timestamp="1619565731351">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="251" key="GridCell.Tab.0.center/0.0.1920.1040/-1280.0.1280.984@0.0.1920.1040" timestamp="1619565731351" />
-    <state width="1877" height="251" key="GridCell.Tab.0.left" timestamp="1619565731351">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="251" key="GridCell.Tab.0.left/0.0.1920.1040/-1280.0.1280.984@0.0.1920.1040" timestamp="1619565731351" />
-    <state width="1877" height="251" key="GridCell.Tab.0.right" timestamp="1619565731351">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="251" key="GridCell.Tab.0.right/0.0.1920.1040/-1280.0.1280.984@0.0.1920.1040" timestamp="1619565731351" />
-    <state x="889" y="160" width="814" height="1079" key="find.popup" timestamp="1619568126370">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state x="667" y="119" width="610" height="801" key="find.popup/0.0.1920.1040/-1280.0.1280.984@0.0.1920.1040" timestamp="1619564113405" />
-    <state x="889" y="160" width="814" height="1079" key="find.popup/0.0.2560.1400/-1920.0.1920.1040@0.0.2560.1400" timestamp="1619568126370" />
-    <state x="764" y="378" key="scopes" timestamp="1619561943173">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="764" y="378" key="scopes/0.0.1920.1040/-1280.0.1280.984@0.0.1920.1040" timestamp="1619561943173" />
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/face_recognition_FPMS$GUI.coverage" NAME="GUI Coverage Results" MODIFIED="1619614284819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/faceDetection/contributed" />
   </component>
 </project>

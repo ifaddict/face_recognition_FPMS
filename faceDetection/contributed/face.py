@@ -61,10 +61,10 @@ class Face:
 
 
 class Recognition:
-    def __init__(self):
+    def __init__(self, conf):
         self.detect = Detection()
         self.encoder = Encoder()
-        self.identifier = Identifier()
+        self.identifier = Identifier(conf)
 
     def add_identity(self, image, person_name):
         faces = self.detect.find_faces(image)
@@ -88,7 +88,8 @@ class Recognition:
 
 
 class Identifier:
-    def __init__(self):
+    def __init__(self, conf):
+        self.conf = conf
         with open(classifier_model, 'rb') as infile:
             self.model, self.class_names = pickle.load(infile)
 
@@ -97,7 +98,7 @@ class Identifier:
             predictions = self.model.predict_proba([face.embedding])
             best_class_indices = np.argmax(predictions, axis=1)
             confidence =  max(predictions[0])
-            if confidence < 0.85:
+            if confidence < self.conf:
                 return "Inconnu"
             else:
                 return self.class_names[best_class_indices[0]]

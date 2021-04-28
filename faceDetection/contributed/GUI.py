@@ -22,10 +22,44 @@ from utils.general import check_img_size, check_imshow, non_max_suppression, sca
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, time_synchronized
 
-_State = True
-sampling = False
-retrained = False
-face_recognition = face.Recognition()
+
+class NewWindow(tk.Toplevel):
+
+    def __init__(self, master=None):
+        super().__init__(master=master)
+        self.title("Options")
+        self.geometry("300x300")
+        label = tk.Label(self, text="Options Window")
+        label.pack()
+
+
+        # Creating a Option Menu for objetCONF
+        # Set the variable for objetCONF and create the list
+        # of options by initializing the constructor 
+        # of class OptionMenu.
+        objetCONF_Variable = tk.StringVar(self)
+        objetCONF_Variable.set(str(opt.conf_thres) + " (actuel)")
+        objetCONF_Option = tk.OptionMenu(self,
+                                      objetCONF_Variable,
+                                      "0.2", "0.3", "0.4 (recommandé)", "0.5")
+        objetCONF_Option.pack()
+
+        # Creating a Option Menu for visageCONF
+        # Set the variable for visageCONF and create the list
+        # of options by initializing the constructor 
+        # of class OptionMenu.
+        visageCONF_Variable = tk.StringVar(self)
+        visageCONF_Variable.set(str(opt.conf_thres2) + " (actuel)")
+        visageCONF_Option = tk.OptionMenu(self, visageCONF_Variable,
+                                     "0.5", "0.6", "0.7 (recommandé)",
+                                     "0.8")
+        visageCONF_Option.pack()
+
+
+
+        btn_create = tk.ttk.Button(self, text='Enregistrer', width=34,
+                                   command=lambda: saveAndClose(self, float(visageCONF_Variable.get().split()[0]), float(objetCONF_Variable.get().split()[0]), True))
+        btn_create.place(x=50, y=200, height=35)
 
 def initialiseYoloV5():
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
@@ -56,8 +90,21 @@ def initialiseYoloV5():
 
     return model, device
 
+def saveAndClose(window, visageConf, objetConf, save=False):
+    global _Option
+    if save:
+        opt.conf_thres = objetConf
+        opt.conf_thres2 = visageConf
+        _Option = True
+    window.destroy()
+
+
+
 
 def objectDetect(photo, model, device):
+
+    global _Option
+
     time.sleep(0.2)
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
@@ -81,7 +128,13 @@ def objectDetect(photo, model, device):
             vid_cap.release()
             break
 
-
+        if _Option is True:
+            print("Parameters altered. Resetting model...")
+            _Option = False
+            vid_cap.release()
+            objetThread = threading.Thread(target=objectDetect, args=(photo, model, device))
+            objetThread.start()
+            return
 
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -136,6 +189,8 @@ def objectDetect(photo, model, device):
 def processFrameV2(photo, entryLabel):
     global retrained
     global sampling
+    global _Option
+
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
@@ -153,6 +208,14 @@ def processFrameV2(photo, entryLabel):
         t2 = time.time()
         if _State is True:
             vid_cap.release()
+            return
+
+        if _Option is True:
+            print("Parameters altered. Resetting model...")
+            _Option = False
+            vid_cap.release()
+            visageThread = threading.Thread(target=processFrameV2, args=(photo, entryLabel))
+            visageThread.start()
             return
         img = im0s[0].copy()
 
@@ -201,10 +264,6 @@ def retrain():
     retrained = True
 
 
-
-
-
-
 def Verification(txt,window):
 
     #Infos bonnes = accès au système
@@ -251,8 +310,6 @@ def launchSampler(video_capture, q, entryLabel):
         #threading.Thread(target=rt.captureSamples, args=(cap3, q, entryLabel,)).start()
 
 
-
-
 def launchEvaluator(video_capture, q, face_recognition):
     threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
 
@@ -262,8 +319,9 @@ def switch(cap,photo,model, device, q, entryLabel):
     
     global _State
     #_State is True by default
-    
-    _State = not _State #Switch the variable
+
+    if _Option is not True:
+        _State = not _State #Switch the variable
 
     if _State is not True:
         visageThread = threading.Thread(target=processFrameV2, args=(photo,entryLabel))
@@ -275,9 +333,7 @@ def switch(cap,photo,model, device, q, entryLabel):
 
 
 
-
 def CamWindow():
-    faceRecogQueue = queue.Queue()
 
     root = tk.Tk()
     
@@ -347,6 +403,10 @@ def CamWindow():
 
     btn_switch.place(x=730, y=340, height=35)
 
+
+    btn_option = tk.ttk.Button(root, text="Options", width = 15, command = lambda: NewWindow(root))
+    btn_option.place(x=730, y=150, height= 30)
+
     #--------------- End work in progress -------------------
 
 
@@ -355,7 +415,7 @@ def CamWindow():
 
                          font='Times 10 italic')
     statusbar.pack(side=tk.BOTTOM, fill=tk.X)
-    
+
     
 
     #►►►► START ◄◄◄◄
@@ -372,11 +432,20 @@ def CamWindow():
     
 if __name__ == "__main__":
 
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='testYaya.pt', help='model.pt path(s)')
     parser.add_argument('--source', type=str, default='0', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
+
+    #►►►► Work in Progress : 3) Bouton Option to alter Thresholds ◄◄◄◄
+
     parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
+    parser.add_argument('--conf-thres2', type=float, default=0.8, help='visage confidence threshold')
+
+    #►►►► End Work in Progress : 3) Bouton Option to alter Thresholds ◄◄◄◄
+
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
@@ -384,4 +453,12 @@ if __name__ == "__main__":
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     opt = parser.parse_args()
+
+    _State = True #Use to identify if object or faces are processed.
+    sampling = False #Use to alert that a retraining of the visage model is requested.
+    retrained = False #Use to reboot the model when retrained
+    _Option = False #Use to specify that some options changed
+
+    face_recognition = face.Recognition(opt.conf_thres2)
+
     CamWindow()
