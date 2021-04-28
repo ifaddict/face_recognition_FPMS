@@ -220,7 +220,6 @@ def processFrameV2(photo, entryLabel):
     global sampling
     global evaluating
     global _Option
-
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
     fps_display_interval = 5  # seconds
@@ -234,21 +233,17 @@ def processFrameV2(photo, entryLabel):
     global face_recognition
     #face_recognition.encoder = face.Encoder()
     count = 0 # utilisé pour l'évaluation d'accès
-
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         t2 = time.time()
         if _State is True:
             vid_cap.release()
             return
-
         if _Option is True:
             print("Parameters altered. Resetting model...")
             _Option = False
             face_recognition = face.Recognition(opt.conf_thres2)
         img = im0s[0].copy()
-
         faces = face_recognition.identify(img)
-
         if evaluating:
             if len(faces) == 1:
                 if faces[0].name is not None:
@@ -265,12 +260,10 @@ def processFrameV2(photo, entryLabel):
                 # changeText(frameQueue, "Une seule personne autorisee")
                 print("Une seule personne autorisée pour l'évaluation d'accès")
                 count = 0
-
             if count == 10:
                 print("accès autorisé")
                 count = 0
                 evaluating = False
-
 
         if sampling: #Altered in launchSampler()
             print("Sampling...")
@@ -292,16 +285,13 @@ def processFrameV2(photo, entryLabel):
                     print("Sampling done. Training...")
                     sampling = False
                     threading.Thread(target=retrain, args=()).start()
-
         rt.add_overlays(img, faces, frame_rate)
-
         # on convertit la frame en image PIL et on la paste sur l'interface
         frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(frame)
         photo.paste(image)
         t3 = time.time()
         #print(f'{source}: Done. ({t3 - t2:.3f}s)')
-
         if retrained:
             print("Resetting model...")
             face_recognition = face.Recognition(opt.conf_thres2)
