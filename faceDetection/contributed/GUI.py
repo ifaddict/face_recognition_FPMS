@@ -2,10 +2,11 @@ import argparse
 import os
 import random
 import time
-
+import configargparse
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
+
 import cv2
 from PIL import Image
 from PIL import ImageTk
@@ -15,6 +16,7 @@ import threading, queue
 import face
 import torch
 import torch.backends.cudnn as cudnn
+from pathlib import Path
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams
@@ -55,11 +57,25 @@ class NewWindow(tk.Toplevel):
                                      "0.8")
         visageCONF_Option.pack()
 
+        liste_label = os.listdir(r'../PERSONS_ALIGNED')
+
+        label_Variable = tk.StringVar(self)
+        label_Variable.set(liste_label[0])
+
+        label_menu = tk.OptionMenu(self, label_Variable, *liste_label)
+        label_menu.place(x=50, y=100, height=35)
 
 
-        btn_create = tk.ttk.Button(self, text='Enregistrer', width=34,
+        btn_label = tk.ttk.Button(self, text='Supprimer le label', width=17, command = lambda :suppress(label_Variable.get(),self, master))
+        btn_label.place(x=150, y=100, height=35)
+
+        btn_save = tk.ttk.Button(self, text='Enregistrer', width=34,
                                    command=lambda: saveAndClose(self, float(visageCONF_Variable.get().split()[0]), float(objetCONF_Variable.get().split()[0]), True))
-        btn_create.place(x=50, y=200, height=35)
+        btn_save.place(x=50, y=200, height=35)
+
+        btn_quit = tk.ttk.Button(self, text='Quitter', width=34,
+                                   command=lambda: saveAndClose(self, float(visageCONF_Variable.get().split()[0]), float(objetCONF_Variable.get().split()[0])))
+        btn_quit.place(x = 50, y = 150, height = 35)
 
 def initialiseYoloV5():
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
@@ -91,15 +107,28 @@ def initialiseYoloV5():
     return model, device
 
 def saveAndClose(window, visageConf, objetConf, save=False):
+
     global _Option
     if save:
         opt.conf_thres = objetConf
         opt.conf_thres2 = visageConf
+        update()
         _Option = True
     window.destroy()
 
+def update():
+    with open('config.conf', 'w') as config:
+        config.write("conf_thres=" + str(opt.conf_thres) + '\n')
+        config.write("conf_thres2=" + str(opt.conf_thres2))
 
+def suppress(label, opt, master):
+    for file in os.listdir(r'../PERSONS_ALIGNED/' + label):
+        os.remove(r'../PERSONS_ALIGNED/' + label + '/' + file)
+    os.rmdir(r'../PERSONS_ALIGNED/' + label)
 
+    threading.Thread(target = retrain, args=()).start()
+    opt.destroy()
+    NewWindow(master)
 
 def objectDetect(photo, model, device):
 
@@ -213,10 +242,7 @@ def processFrameV2(photo, entryLabel):
         if _Option is True:
             print("Parameters altered. Resetting model...")
             _Option = False
-            vid_cap.release()
-            visageThread = threading.Thread(target=processFrameV2, args=(photo, entryLabel))
-            visageThread.start()
-            return
+            face_recognition = face.Recognition(opt.conf_thres2)
         img = im0s[0].copy()
 
         faces = face_recognition.identify(img)
@@ -251,12 +277,10 @@ def processFrameV2(photo, entryLabel):
         t3 = time.time()
         #print(f'{source}: Done. ({t3 - t2:.3f}s)')
 
-        if numero == 30 and retrained:
+        if retrained:
             print("Resetting model...")
-            visageThread = threading.Thread(target=processFrameV2, args=(photo, entryLabel))
-            visageThread.start()
+            face_recognition = face.Recognition(opt.conf_thres2)
             retrained = False
-            break
 
 def retrain():
     global retrained
@@ -306,8 +330,6 @@ def launchSampler(video_capture, q, entryLabel):
         tk.messagebox.showinfo('Message', 'Le label ne peut pas être vide')
         return
     sampling = True
-    #else:
-        #threading.Thread(target=rt.captureSamples, args=(cap3, q, entryLabel,)).start()
 
 
 def launchEvaluator(video_capture, q, face_recognition):
@@ -398,7 +420,7 @@ def CamWindow():
 
     #--------------- Work in progress -----------------
 
-    btn_switch = tk.ttk.Button(root, text='Switch to Visage', width=34,
+    btn_switch = tk.ttk.Button(root, text='Switch Mode', width=34,
                                command=lambda: switch(cap, photo,model, device, q, entryLabel))
 
     btn_switch.place(x=730, y=340, height=35)
@@ -432,28 +454,22 @@ def CamWindow():
     
 if __name__ == "__main__":
 
-
-
-    parser = argparse.ArgumentParser()
+    parser = configargparse.ArgParser(default_config_files=['config.conf'])
     parser.add_argument('--weights', nargs='+', type=str, default='testYaya.pt', help='model.pt path(s)')
     parser.add_argument('--source', type=str, default='0', help='source')  # file/folder, 0 for webcam
-    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
-
-    #►►►► Work in Progress : 3) Bouton Option to alter Thresholds ◄◄◄◄
-
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--conf-thres2', type=float, default=0.8, help='visage confidence threshold')
-
-    #►►►► End Work in Progress : 3) Bouton Option to alter Thresholds ◄◄◄◄
-
-    parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
+    parser.add_argument('--img_size', type=int, default=416, help='inference size (pixels)')
+    parser.add_argument('--conf_thres', type=float, default=0.4, help='object confidence threshold')
+    parser.add_argument('--conf_thres2', type=float, default=0.8, help='visage confidence threshold')
+    parser.add_argument('--iou_thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--view-img', action='store_true', help='display results')
-    parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
-    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+    parser.add_argument('--view_img', action='store_true', help='display results')
+    parser.add_argument('--classes', nargs='+', default = None, help='filter by class: --class 0, or --class 0 2 3')
+    parser.add_argument('--agnostic_nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
-    opt = parser.parse_args()
 
+
+    opt = parser.parse_args()
+    print(vars(opt))
     _State = True #Use to identify if object or faces are processed.
     sampling = False #Use to alert that a retraining of the visage model is requested.
     retrained = False #Use to reboot the model when retrained

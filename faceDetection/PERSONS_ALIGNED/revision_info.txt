@@ -1,7 +1,0 @@
-arguments: src/align_dataset_mtcnn.py PERSONS PERSONS_ALIGNED
---------------------
-tensorflow version: 2.4.1
---------------------
-git hash: b''
---------------------
-b''
