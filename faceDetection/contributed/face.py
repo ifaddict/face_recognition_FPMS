@@ -77,7 +77,6 @@ class Recognition:
 
     def identify(self, image):
         faces = self.detect.find_faces(image)
-        print("les visages : ", faces)
         for i, face in enumerate(faces):
             if debug:
                 cv2.imshow("Face: " + str(i), face.image)
