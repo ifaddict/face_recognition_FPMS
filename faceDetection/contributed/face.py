@@ -77,7 +77,7 @@ class Recognition:
 
     def identify(self, image):
         faces = self.detect.find_faces(image)
-
+        print("les visages : ", faces)
         for i, face in enumerate(faces):
             if debug:
                 cv2.imshow("Face: " + str(i), face.image)
@@ -111,10 +111,14 @@ class Encoder:
 
     def generate_embedding(self, face):
         # Get input and output tensors
+        """
         images_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("input:0")
         embeddings = tf.compat.v1.get_default_graph().get_tensor_by_name("embeddings:0")
         phase_train_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("phase_train:0")
-
+        """
+        images_placeholder = self.sess.graph.get_tensor_by_name("input:0")
+        embeddings = self.sess.graph.get_tensor_by_name("embeddings:0")
+        phase_train_placeholder = self.sess.graph.get_tensor_by_name("phase_train:0")
         prewhiten_face = facenet.prewhiten(face.image)
 
         # Run forward pass to calculate embeddings

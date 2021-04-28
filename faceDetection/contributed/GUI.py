@@ -25,6 +25,7 @@ from utils.torch_utils import select_device, time_synchronized
 _State = True
 sampling = False
 retrained = False
+face_recognition = face.Recognition()
 
 def initialiseYoloV5():
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
@@ -145,8 +146,8 @@ def processFrameV2(photo, entryLabel):
     dataset = LoadStreams(source, img_size=imgsz, stride=stride)
     t0 = time.time()
     numero = 0
-
-    face_recognition = face.Recognition()
+    global face_recognition
+    #face_recognition.encoder = face.Encoder()
 
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         t2 = time.time()
