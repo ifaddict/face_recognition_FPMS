@@ -218,6 +218,7 @@ def objectDetect(photo, model, device):
 def processFrameV2(photo, entryLabel):
     global retrained
     global sampling
+    global evaluating
     global _Option
 
     time.sleep(0.2)
@@ -232,6 +233,7 @@ def processFrameV2(photo, entryLabel):
     numero = 0
     global face_recognition
     #face_recognition.encoder = face.Encoder()
+    count = 0 # utilisé pour l'évaluation d'accès
 
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         t2 = time.time()
@@ -246,6 +248,29 @@ def processFrameV2(photo, entryLabel):
         img = im0s[0].copy()
 
         faces = face_recognition.identify(img)
+
+        if evaluating:
+            if len(faces) == 1:
+                if faces[0].name is not None:
+                    if faces[0].name != "Inconnu":
+                        # changeText(frameQueue, "Visage connu detecte")
+                        print("visage connu détecté")
+                        count += 1
+                    else:
+                        # changeText(frameQueue, "Visage Inconnu, accès refusé")
+                        print("visage inconnu accès refusé")
+                        evaluating = False
+                        count = 0
+            else:
+                # changeText(frameQueue, "Une seule personne autorisee")
+                print("Une seule personne autorisée pour l'évaluation d'accès")
+                count = 0
+
+            if count == 10:
+                print("accès autorisé")
+                count = 0
+                evaluating = False
+
 
         if sampling: #Altered in launchSampler()
             print("Sampling...")
@@ -333,7 +358,8 @@ def launchSampler(video_capture, q, entryLabel):
 
 
 def launchEvaluator(video_capture, q, face_recognition):
-    threading.Thread(target=rt.evaluateAcess, args=(video_capture, q, face_recognition,)).start()
+    global evaluating
+    evaluating = True
 
 def switch(cap,photo,model, device, q, entryLabel):
 
@@ -474,6 +500,7 @@ if __name__ == "__main__":
     sampling = False #Use to alert that a retraining of the visage model is requested.
     retrained = False #Use to reboot the model when retrained
     _Option = False #Use to specify that some options changed
+    evaluating = False #Used to check if we need to evaluate the access
 
     face_recognition = face.Recognition(opt.conf_thres2)
 
