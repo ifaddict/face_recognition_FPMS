@@ -48,8 +48,8 @@ parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --c
 parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
 parser.add_argument('--augment', action='store_true', help='augmented inference')
 opt = parser.parse_args()
++
 
-face_recognition = face.Recognition(opt.conf_thres2)
 
 class NewWindow(tk.Toplevel):
 
@@ -118,13 +118,19 @@ def initialiseYoloV5():
 
     return model, device
 
-def saveAndClose(window, visageConf, objetConf, save=False):
+def saveAndClose(visageConf, objetConf, nframes, save=False):
     global _Option
     if save:
-        opt.conf_thres = objetConf
-        opt.conf_thres2 = visageConf
+        opt.conf_thres = float(objetConf)
+        opt.conf_thres2 = float(visageConf)
+        opt.nframes = int(nframes)
+
+        with open('config.conf', 'w') as config:
+            config.write('conf_thres=' + str(objetConf) + '\n')
+            config.write('conf_thres2=' + str(visageConf) + '\n')
+            config.write('bframes=' + str(nframes) + '\n')
         _Option = True
-    window.destroy()
+
 
 
 
@@ -245,7 +251,7 @@ def processFrameV2(photo):
             print("Parameters altered. Resetting model...")
             _Option = False
             vid_cap.release()
-            visageThread = threading.Thread(target=processFrameV2, args=(photo))
+            visageThread = threading.Thread(target=processFrameV2, args=(photo,))
             visageThread.start()
             return
         img = im0s[0].copy()

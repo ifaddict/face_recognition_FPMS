@@ -194,7 +194,7 @@ class SampleApp(tk.Tk):
 
         for F in (ObjectView, FaceView, LockView, AddView, SettingsView, HelpView):
             page_name = F.__name__
-            frame = F(parent=lobby_frame, controller=self)
+            frame = F(main= self, parent=lobby_frame, controller=self)
             self.frames[page_name] = frame
 
             # put all of the pages in the same location;
@@ -211,10 +211,11 @@ class SampleApp(tk.Tk):
     def show_frame(self, page_name):
         '''Show a frame for the given page name'''
         frame = self.frames[page_name]
+        frame.update()
         frame.tkraise()
 
 class ObjectView(tk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self,main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
@@ -240,7 +241,12 @@ class ObjectView(tk.Frame):
                          font="Helvetica 13 bold", command=lambda: GUI.launchObjectDetect(controller.photo, controller.model, controller.device))
         btn_gun.place(x=185, y=200, anchor='center', width=120, height=50)
 
-        canvas_title.create_text(190, 80, anchor='center', width=300,font=self.font, text='Désactivé', justify='center')
+        if GUI._State:
+            etat = 'Activé'
+        else:
+            etat = 'Désactivé'
+
+        state = canvas_title.create_text(190, 80, anchor='center', width=300,font=self.font, text=etat, justify='center')
         canvas_console = tk.Canvas(self, width=300, height=750,
                                  bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
 
@@ -268,11 +274,19 @@ class ObjectView(tk.Frame):
         log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
         Console = canvas_console.create_window(185, 425, window=log_canvas)
 
+        main.after(5, lambda: self.updateView(state, canvas_title, main))
+    def updateView(self, state, canvas, main):
+        if GUI._State:
+            canvas.itemconfigure(state, text='Activé')
 
+        else:
+            canvas.itemconfigure(state, text='Désactivé')
+
+        main.after(5, lambda: self.updateView(state, canvas, main))
 
 
 class FaceView(tk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self,main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
@@ -293,12 +307,16 @@ class FaceView(tk.Frame):
                                  bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
         canvas_title.pack(fill='both', expand=True)
 
+        if GUI._State:
+            etat = 'Désactivé'
+        else:
+            etat = 'Activé'
         canvas_title.create_text(35, 40, text="Etat", font='Helvetica 14 bold', fill ='#000000')
         btn_gun = Button(self, borderwidth=0, cursor="hand2", text="Activer", bg="#273ead", fg="white",
                          font="Helvetica 13 bold", command=lambda: GUI.launchFaceDetect(controller.photo))
         btn_gun.place(x=185, y=200, anchor='center', width=120, height=50)
 
-        canvas_title.create_text(190, 80, anchor='center', width=300,font=self.font, text='Désactivé', justify='center')
+        state = canvas_title.create_text(190, 80, anchor='center', width=300,font=self.font, text=etat, justify='center')
         canvas_console = tk.Canvas(self, width=300, height=750,
                                  bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
 
@@ -326,10 +344,19 @@ class FaceView(tk.Frame):
         log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
         Console = canvas_console.create_window(185, 425, window=log_canvas)
 
+        main.after(5, lambda: self.updateView(state, canvas_title, main))
 
+    def updateView(self, state, canvas, main):
+        if GUI._State:
+            canvas.itemconfigure(state, text='Désactivé')
+
+        else:
+            canvas.itemconfigure(state, text='Activé')
+
+        main.after(5, lambda: self.updateView(state, canvas, main))
 class LockView(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self,main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
@@ -355,7 +382,7 @@ class LockView(tk.Frame):
 
 class AddView(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self,main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
@@ -389,7 +416,7 @@ class AddView(tk.Frame):
 
 class SettingsView(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self,main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
@@ -406,6 +433,7 @@ class SettingsView(tk.Frame):
         objetCombo = ttk.Combobox(optionsFrame, values=[
             "0.2", "0.3", "0.4", "0.5", "0.6"
         ])
+
         objetCombo.current(2)
         objetCombo.place(x=150, y=90)
 
@@ -431,7 +459,7 @@ class SettingsView(tk.Frame):
 
 
 
-        btn_gun = Button(optionsFrame, borderwidth=0, cursor="hand2", text="Sauvegarder", bg="#273ead", fg="white", font="Helvetica 13 bold")
+        btn_gun = Button(optionsFrame, borderwidth=0, cursor="hand2", text="Sauvegarder", bg="#273ead", fg="white", font="Helvetica 13 bold", command =lambda : GUI.saveAndClose(objetCombo.get(),visageCombo.get(),framesScale.get(), True))
         btn_gun.place(x=120, y=350, anchor=NW, width=120, height=50)
 
 
@@ -442,7 +470,7 @@ class SettingsView(tk.Frame):
 
 
 class HelpView(tk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self,main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
