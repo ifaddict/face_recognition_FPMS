@@ -254,7 +254,7 @@ class ObjectView(tk.Frame):
 
         canvas_console.pack(fill='both', expand=True)
 
-        seuilObjet = str(0.6) #opt.confthres
+        seuilObjet = str(GUI.opt.conf_thres) #opt.confthres
 
         canvas_console.create_text(105, 40, text="Seuil de confiance" ,font='Helvetica 14 bold', fill ='#000000')
 
@@ -324,7 +324,7 @@ class FaceView(tk.Frame):
 
         canvas_console.pack(fill='both', expand=True)
 
-        seuilObjet = str(0.6) #opt.confthres
+        seuilObjet = str(GUI.opt.conf_thres2) #opt.confthres
 
         canvas_console.create_text(105, 40, text="Seuil de confiance" ,font='Helvetica 14 bold', fill ='#000000')
 
@@ -341,19 +341,21 @@ class FaceView(tk.Frame):
         canvas_console.create_text(185, 365, text="Logs", font=self.font, fill= "#000000")
 
         log_canvas = tk.Canvas(self, width =280, height= 25)
-        log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
+        log = log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
         Console = canvas_console.create_window(185, 425, window=log_canvas)
 
-        main.after(5, lambda: self.updateView(state, canvas_title, main))
+        main.after(5, lambda: self.updateView(state, canvas_title, log_canvas, log, main))
 
-    def updateView(self, state, canvas, main):
+    def updateView(self, state, canvas, log_canvas, log, main):
         if GUI._State:
             canvas.itemconfigure(state, text='Désactivé')
 
         else:
             canvas.itemconfigure(state, text='Activé')
 
-        main.after(5, lambda: self.updateView(state, canvas, main))
+        log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
+
+        main.after(5, lambda: self.updateView(state, canvas, log_canvas, log, main))
 class LockView(tk.Frame):
 
     def __init__(self,main, parent, controller):
@@ -430,21 +432,21 @@ class SettingsView(tk.Frame):
 
         optionsFrame = tk.Frame(self, bg="#ffffff", height=400)
 
-        objetCombo = ttk.Combobox(optionsFrame, values=[
-            "0.2", "0.3", "0.4", "0.5", "0.6"
-        ])
-
-        objetCombo.current(2)
+        objectsThreshHolds = ["0.2", "0.3", "0.4", "0.5", "0.6"]
+        objetCombo = ttk.Combobox(optionsFrame, values=objectsThreshHolds)
+        print("le seuil objet : ", GUI.opt.conf_thres)
+        currentConf = str(GUI.opt.conf_thres)
+        objetCombo.current(objectsThreshHolds.index(currentConf))
         objetCombo.place(x=150, y=90)
 
         objetLabel = tk.Label(optionsFrame, text="Seul de confiance \nDétection d'objets", bg="#ffffff")
         objetLabel.place(x=30, y=80)
 
 
-        visageCombo = ttk.Combobox(optionsFrame, values=[
-            "0.7", "0.75", "0.8", "0.85", "0.9"
-        ])
-        visageCombo.current(3)
+        threshHolds = ["0.7", "0.75", "0.8", "0.85", "0.9"]
+        visageCombo = ttk.Combobox(optionsFrame, values=threshHolds)
+        currentConf = str(GUI.opt.conf_thres2)
+        visageCombo.current(threshHolds.index(currentConf))
         visageCombo.place(x=150, y=150)
 
         visageLabel = tk.Label(optionsFrame, text="Seul de confiance \nDétection visages", bg="#ffffff")
@@ -524,7 +526,7 @@ if __name__ == '__main__':
     _Option = False #Use to specify that some options changed
     evaluating = False #Used to check if we need to evaluate the access
 
-    face_recognition = face.Recognition(opt.conf_thres2)
+    face_recognition = face.Recognition(GUI.opt.conf_thres2)
     app = SampleApp()
     app.mainloop()
 

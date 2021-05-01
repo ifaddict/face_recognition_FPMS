@@ -28,6 +28,7 @@ retrained = False  # Use to reboot the model when retrained
 _Option = False  # Use to specify that some options changed
 evaluating = False  # Used to check if we need to evaluate the access
 entryLabel = None
+faceLogs = ""
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--weights', nargs='+', type=str, default='testYaya.pt', help='model.pt path(s)')
@@ -48,8 +49,8 @@ parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --c
 parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
 parser.add_argument('--augment', action='store_true', help='augmented inference')
 opt = parser.parse_args()
-+
 
+face_recognition = face.Recognition(opt.conf_thres2)
 
 class NewWindow(tk.Toplevel):
 
@@ -113,10 +114,9 @@ def initialiseYoloV5():
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
 
-
-
-
     return model, device
+
+
 
 def saveAndClose(visageConf, objetConf, nframes, save=False):
     global _Option
@@ -163,7 +163,7 @@ def objectDetect(photo, model, device):
             break
 
         if _Option is True:
-            print("Parameters altered. Resetting model...")
+            print("Paramètres changés, rechargement...")
             _Option = False
             vid_cap.release()
             objetThread = threading.Thread(target=objectDetect, args=(photo, model, device))
@@ -226,6 +226,7 @@ def processFrameV2(photo):
     global evaluating
     global _Option
     global entryLabel
+    global faceLogs
 
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
@@ -240,15 +241,13 @@ def processFrameV2(photo):
     global face_recognition
     #face_recognition.encoder = face.Encoder()
     count = 0 # utilisé pour l'évaluation d'accès
-    print("okok")
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
         t2 = time.time()
         if _State is True:
-            print("ok ?")
             vid_cap.release()
             return
         if _Option is True:
-            print("Parameters altered. Resetting model...")
+            faceLogs = "Parameters altered.Resetting..."
             _Option = False
             vid_cap.release()
             visageThread = threading.Thread(target=processFrameV2, args=(photo,))
@@ -263,26 +262,26 @@ def processFrameV2(photo):
                 if faces[0].name is not None:
                     if faces[0].name != "Inconnu":
                         # changeText(frameQueue, "Visage connu detecte")
-                        print("visage connu détecté")
+                        faceLogs = "Visage Connu détecté"
                         count += 1
                     else:
                         # changeText(frameQueue, "Visage Inconnu, accès refusé")
-                        print("visage inconnu accès refusé")
+                        faceLogs = "visage inconnu accès refusé"
                         evaluating = False
                         count = 0
             else:
                 # changeText(frameQueue, "Une seule personne autorisee")
-                print("Une seule personne autorisée pour l'évaluation d'accès")
+                faceLogs = "Une seule personne autorisée"
                 count = 0
 
             if count == 10:
-                print("accès autorisé")
+                faceLogs = "accès autorisé"
                 count = 0
                 evaluating = False
 
 
         if sampling: #Altered in launchSampler()
-            print("Sampling...")
+            faceLogs = "Sampling..."
             if len(faces) == 1 and faces[0].name == "Inconnu":
                 y = faces[0].bounding_box[0]
                 x = faces[0].bounding_box[1]
@@ -296,9 +295,9 @@ def processFrameV2(photo):
                 im = Image.fromarray((cropped * 255).astype(np.uint8))
                 im.save(samplesPath + str(numero) + ".png")
                 numero += 1
-                print("Saved")
+                faceLogs = "Saved"
                 if numero == 30:
-                    print("Sampling done. Training...")
+                    faceLogs = "Sampling done. Training..."
                     sampling = False
                     threading.Thread(target=retrain, args=()).start()
 
@@ -312,7 +311,7 @@ def processFrameV2(photo):
         #print(f'{source}: Done. ({t3 - t2:.3f}s)')
 
         if numero == 30 and retrained:
-            print("Resetting model...")
+            faceLogs = "Resetting model..."
             face_recognition = face.Recognition(opt.conf_thres2)
             retrained = False
 
