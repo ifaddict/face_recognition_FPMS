@@ -15,6 +15,7 @@ import threading, queue
 import face
 import torch
 import torch.backends.cudnn as cudnn
+from glob import glob
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams
@@ -254,11 +255,11 @@ class ObjectView(tk.Frame):
 
         canvas_console.pack(fill='both', expand=True)
 
-        seuilObjet = str(GUI.opt.conf_thres) #opt.confthres
+        seuilObjet = str(GUI.objectThreshold) #opt.confthres
 
         canvas_console.create_text(105, 40, text="Seuil de confiance" ,font='Helvetica 14 bold', fill ='#000000')
 
-        canvas_console.create_text(185, 80, text=seuilObjet, font=self.font,fill = '#000000')
+        seuil = canvas_console.create_text(185, 80, text=seuilObjet, font=self.font,fill = '#000000')
 
         canvas_console.create_text(117, 140, text="Objets pris en charge", font=self.font, fill= "#000000")
         with open("label.txt", 'r') as f:
@@ -274,15 +275,16 @@ class ObjectView(tk.Frame):
         log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
         Console = canvas_console.create_window(185, 425, window=log_canvas)
 
-        main.after(5, lambda: self.updateView(state, canvas_title, main))
-    def updateView(self, state, canvas, main):
+        main.after(5, lambda: self.updateView(state, canvas_title, main, canvas_console, seuil))
+    def updateView(self, state, canvas, main, canvas_console, seuil):
         if GUI._State:
             canvas.itemconfigure(state, text='Activé')
 
         else:
             canvas.itemconfigure(state, text='Désactivé')
 
-        main.after(5, lambda: self.updateView(state, canvas, main))
+        canvas_console.itemconfigure(seuil, text=str(GUI.objectThreshold))
+        main.after(5, lambda: self.updateView(state, canvas, main, canvas_console, seuil))
 
 
 class FaceView(tk.Frame):
@@ -324,15 +326,17 @@ class FaceView(tk.Frame):
 
         canvas_console.pack(fill='both', expand=True)
 
-        seuilObjet = str(GUI.opt.conf_thres2) #opt.confthres
+        seuilFace = str(GUI.faceThreshold) #opt.confthres
 
         canvas_console.create_text(105, 40, text="Seuil de confiance" ,font='Helvetica 14 bold', fill ='#000000')
 
-        canvas_console.create_text(185, 80, text=seuilObjet, font=self.font,fill = '#000000')
+        seuil = canvas_console.create_text(185, 80, text=seuilFace, font=self.font,fill = '#000000')
 
         canvas_console.create_text(135, 140, text="Membres pris en charge", font=self.font, fill= "#000000")
-        with open("label.txt", 'r') as f:
-            labels = [x.rstrip('\n') for x in f.readlines()]
+        '''with open("label.txt", 'r') as f:
+            labels = [x.rstrip('\n') for x in f.readlines()]'''
+        labels = os.listdir("../PERSONS_ALIGNED/")
+        print(labels)
         listBox = Listbox(self)
         for i, label in enumerate(labels):
             listBox.insert(i, label)
@@ -344,9 +348,9 @@ class FaceView(tk.Frame):
         log = log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
         Console = canvas_console.create_window(185, 425, window=log_canvas)
 
-        main.after(5, lambda: self.updateView(state, canvas_title, log_canvas, log, main))
+        main.after(5, lambda: self.updateView(state, canvas_title, log_canvas, log, main, canvas_console, seuil))
 
-    def updateView(self, state, canvas, log_canvas, log, main):
+    def updateView(self, state, canvas, log_canvas, log, main, canvas_console, seuil):
         if GUI._State:
             canvas.itemconfigure(state, text='Désactivé')
 
@@ -354,8 +358,9 @@ class FaceView(tk.Frame):
             canvas.itemconfigure(state, text='Activé')
 
         log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
+        canvas_console.itemconfigure(seuil, text=str(GUI.faceThreshold))
 
-        main.after(5, lambda: self.updateView(state, canvas, log_canvas, log, main))
+        main.after(5, lambda: self.updateView(state, canvas, log_canvas, log, main, canvas_console, seuil))
 class LockView(tk.Frame):
 
     def __init__(self,main, parent, controller):
@@ -434,8 +439,7 @@ class SettingsView(tk.Frame):
 
         objectsThreshHolds = ["0.2", "0.3", "0.4", "0.5", "0.6"]
         objetCombo = ttk.Combobox(optionsFrame, values=objectsThreshHolds)
-        print("le seuil objet : ", GUI.opt.conf_thres)
-        currentConf = str(GUI.opt.conf_thres)
+        currentConf = str(GUI.objectThreshold)
         objetCombo.current(objectsThreshHolds.index(currentConf))
         objetCombo.place(x=150, y=90)
 
@@ -443,9 +447,9 @@ class SettingsView(tk.Frame):
         objetLabel.place(x=30, y=80)
 
 
-        threshHolds = ["0.7", "0.75", "0.8", "0.85", "0.9"]
+        threshHolds = ["0.5", "0.7", "0.75", "0.8", "0.85", "0.9"]
         visageCombo = ttk.Combobox(optionsFrame, values=threshHolds)
-        currentConf = str(GUI.opt.conf_thres2)
+        currentConf = str(GUI.faceThreshold)
         visageCombo.current(threshHolds.index(currentConf))
         visageCombo.place(x=150, y=150)
 
@@ -461,7 +465,7 @@ class SettingsView(tk.Frame):
 
 
 
-        btn_gun = Button(optionsFrame, borderwidth=0, cursor="hand2", text="Sauvegarder", bg="#273ead", fg="white", font="Helvetica 13 bold", command =lambda : GUI.saveAndClose(objetCombo.get(),visageCombo.get(),framesScale.get(), True))
+        btn_gun = Button(optionsFrame, borderwidth=0, cursor="hand2", text="Sauvegarder", bg="#273ead", fg="white", font="Helvetica 13 bold", command =lambda : GUI.saveAndClose(visageCombo.get(), objetCombo.get(),framesScale.get(), True))
         btn_gun.place(x=120, y=350, anchor=NW, width=120, height=50)
 
 
@@ -498,6 +502,12 @@ class HelpView(tk.Frame):
 
 
 
+def getOptions():
+    options = []
+    with open('config.conf', 'r') as config:
+        for line in config:
+            options.append(float(line.split("=")[1].strip()))
+    return options
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -507,8 +517,10 @@ if __name__ == '__main__':
 
     #►►►► Work in Progress : 3) Bouton Option to alter Thresholds ◄◄◄◄
 
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--conf-thres2', type=float, default=0.8, help='visage confidence threshold')
+    options = getOptions()
+    faceThreshold = options[0]
+    objectThreshold = options[1]
+    framesOption = options[2]
 
     #►►►► End Work in Progress : 3) Bouton Option to alter Thresholds ◄◄◄◄
 
@@ -526,7 +538,7 @@ if __name__ == '__main__':
     _Option = False #Use to specify that some options changed
     evaluating = False #Used to check if we need to evaluate the access
 
-    face_recognition = face.Recognition(GUI.opt.conf_thres2)
+    # face_recognition = face.Recognition(GUI.faceThreshold)
     app = SampleApp()
     app.mainloop()
 

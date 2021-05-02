@@ -50,7 +50,22 @@ parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic 
 parser.add_argument('--augment', action='store_true', help='augmented inference')
 opt = parser.parse_args()
 
-face_recognition = face.Recognition(opt.conf_thres2)
+def getOptions():
+    options = []
+    with open('config.conf', 'r') as config:
+        for line in config:
+            options.append(float(line.split("=")[1].strip()))
+    return options
+
+
+options = getOptions()
+print(options)
+faceThreshold = options[0]
+objectThreshold = options[1]
+framesOption = options[2]
+
+face_recognition = face.Recognition(faceThreshold)
+
 
 class NewWindow(tk.Toplevel):
 
@@ -67,7 +82,7 @@ class NewWindow(tk.Toplevel):
         # of options by initializing the constructor 
         # of class OptionMenu.
         objetCONF_Variable = tk.StringVar(self)
-        objetCONF_Variable.set(str(opt.conf_thres) + " (actuel)")
+        objetCONF_Variable.set(str(faceThreshold) + " (actuel)")
         objetCONF_Option = tk.OptionMenu(self,
                                       objetCONF_Variable,
                                       "0.2", "0.3", "0.4 (recommandé)", "0.5")
@@ -78,7 +93,7 @@ class NewWindow(tk.Toplevel):
         # of options by initializing the constructor 
         # of class OptionMenu.
         visageCONF_Variable = tk.StringVar(self)
-        visageCONF_Variable.set(str(opt.conf_thres2) + " (actuel)")
+        visageCONF_Variable.set(str(objectThreshold) + " (actuel)")
         visageCONF_Option = tk.OptionMenu(self, visageCONF_Variable,
                                      "0.5", "0.6", "0.7 (recommandé)",
                                      "0.8")
@@ -120,16 +135,19 @@ def initialiseYoloV5():
 
 def saveAndClose(visageConf, objetConf, nframes, save=False):
     global _Option
+    global objectThreshold
+    global faceThreshold
     if save:
-        opt.conf_thres = float(objetConf)
-        opt.conf_thres2 = float(visageConf)
-        opt.nframes = int(nframes)
-
+        objectThreshold = float(objetConf)
+        faceThreshold = float(visageConf)
+        framesOption = int(nframes)
+        print("lel")
         with open('config.conf', 'w') as config:
-            config.write('conf_thres=' + str(objetConf) + '\n')
-            config.write('conf_thres2=' + str(visageConf) + '\n')
-            config.write('bframes=' + str(nframes) + '\n')
+            config.write('conf_thres=' + str(faceThreshold) + '\n')
+            config.write('conf_thres2=' + str(objectThreshold) + '\n')
+            config.write('bframes=' + str(framesOption) + '\n')
         _Option = True
+        print(_Option)
 
 
 
@@ -138,6 +156,7 @@ def saveAndClose(visageConf, objetConf, nframes, save=False):
 def objectDetect(photo, model, device):
 
     global _Option
+    global objectThreshold
 
     time.sleep(0.2)
     source, weights, view_img, imgsz = opt.source, opt.weights, opt.view_img, opt.img_size
@@ -182,7 +201,7 @@ def objectDetect(photo, model, device):
         pred = model(img, augment=opt.augment)[0]
     
         # Apply NMS
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        pred = non_max_suppression(pred, objectThreshold, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
         t2 = time_synchronized()
     
         # Process detections
@@ -227,6 +246,7 @@ def processFrameV2(photo):
     global _Option
     global entryLabel
     global faceLogs
+    global faceThreshold
 
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
@@ -239,6 +259,7 @@ def processFrameV2(photo):
     t0 = time.time()
     numero = 0
     global face_recognition
+    print("current face threshold : ", faceThreshold)
     #face_recognition.encoder = face.Encoder()
     count = 0 # utilisé pour l'évaluation d'accès
     for path, img, im0s, vid_cap in dataset: #Webcam Stream
@@ -247,9 +268,11 @@ def processFrameV2(photo):
             vid_cap.release()
             return
         if _Option is True:
+            print("OPTION IS TRUE!!!!!!!!!!!!!!!!!")
             faceLogs = "Parameters altered.Resetting..."
             _Option = False
             vid_cap.release()
+            face_recognition = face.Recognition(faceThreshold)
             visageThread = threading.Thread(target=processFrameV2, args=(photo,))
             visageThread.start()
             return
@@ -312,7 +335,7 @@ def processFrameV2(photo):
 
         if numero == 30 and retrained:
             faceLogs = "Resetting model..."
-            face_recognition = face.Recognition(opt.conf_thres2)
+            face_recognition = face.Recognition(faceThreshold)
             retrained = False
 
 def retrain():
@@ -537,6 +560,6 @@ if __name__ == "__main__":
     _Option = False #Use to specify that some options changed
     evaluating = False #Used to check if we need to evaluate the access
 
-    face_recognition = face.Recognition(opt.conf_thres2)
+    face_recognition = face.Recognition(faceThreshold)
 
     CamWindow()
