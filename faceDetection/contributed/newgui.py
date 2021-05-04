@@ -386,7 +386,23 @@ class LockView(tk.Frame):
 
         lockFrame.grid(row=1, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
 
+        canvas_console = tk.Canvas(self, width=300, height=50,
+                                 bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
 
+        canvas_console.create_text(185, 365, text="Logs", font="Helvetica 13 bold", fill= "#273ead")
+
+        log_canvas = tk.Canvas(self, width =280, height= 25)
+        log = log_canvas.create_text(140,250, anchor='center', state='disabled', width =280, text="log", justify='center' )
+        Console = canvas_console.create_window(185, 300, window=log_canvas)
+
+        main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
+
+
+    def updateView(self, log_canvas, log, main, canvas_console):
+
+        log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
+
+        main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
 class AddView(tk.Frame):
 
     def __init__(self,main, parent, controller):
@@ -394,7 +410,9 @@ class AddView(tk.Frame):
         self.controller = controller
 
         canvasTitle = tk.Canvas(self, bg="#ffffff", height=50)  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
-        canvasTitle.create_text(185, 25, text="Ajouter un membre", font="Helvetica 15 bold", fill="#273ead")  # on ajoute le texte
+        canvasTitle.create_text(185, 25, text="Gérer les membres", font="Helvetica 15 bold", fill="#273ead")  # on ajoute le texte
+
+
 
         self.grid_columnconfigure(0, weight=0, minsize=50)
         self.grid_rowconfigure(1, weight=5)
@@ -402,6 +420,9 @@ class AddView(tk.Frame):
         canvasTitle.grid(row=0, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
 
         addFrame = tk.Frame(self, bg="#ffffff", height=400)
+
+        labelAjout = tk.Label(addFrame, text="Ajouter un membre ", bg="#ffffff", fg="black", font="Helvetica 13 bold")
+        labelAjout.place(x=190, y=50, anchor='center')
 
         labelName = tk.Label(addFrame, text="Label : ", bg="#ffffff", fg="black", font="Helvetica 13 bold")
         labelName.place(x=30, y=87)
@@ -414,11 +435,67 @@ class AddView(tk.Frame):
         entryCode.place(x=120, y=130)
 
 
-        btn_gun = Button(addFrame, borderwidth=0, cursor="hand2", text="Ajouter", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: GUI.launchSampler(entryLabel, entryCode.get()))
-        btn_gun.place(x=130, y=250, anchor=NW, width=120, height=50)
+        btn_add = Button(addFrame, borderwidth=0, cursor="hand2", text="Ajouter", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: add(entryLabel, entryCode.get()))
+        btn_add.place(x=190, y=225, anchor='center', width=120, height=50)
 
 
+        labelDelete = tk.Label(addFrame, text="Supprimer un membre ", bg="#ffffff", fg="black", font="Helvetica 13 bold")
+        labelDelete.place(x=190, y=350, anchor='center')
+
+        label_menu = ttk.Combobox(self, state='readonly', postcommand=lambda :refresh(label_menu))
+        label_menu.place(x=190, y=450, height=25, width=180, anchor='center')
+        liste_label = os.listdir(r'../PERSONS_ALIGNED')
+        label_Variable = tk.StringVar(addFrame)
+
+        if len(liste_label)==0:
+            label_Variable.set('Aucun visage enregistré.')
+            label_menu.set(label_Variable.get())
+
+        else:
+            label_menu['values'] = liste_label
+            label_menu.current(0)
+
+
+
+
+        btn_supp = Button(addFrame, borderwidth=0, cursor="hand2", text="Supprimer", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: supp(label_menu))
+        btn_supp.place(x=190, y=475, anchor='center', width=120, height=50)
+
+
+        if label_menu.get() == 'Aucun visage enregistré.':
+            btn_supp['state'] = tk.DISABLED
         addFrame.grid(row=1, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
+
+
+
+def refresh(label_menu):
+    label_menu['values'] = os.listdir(r'../PERSONS_ALIGNED')
+def add(entryLabel, code):
+    if entryLabel.get() in os.listdir(r'../PERSONS_ALIGNED'):
+        tk.messagebox.showwarning("Opération impossible !",
+                                  "Le label existe déjà dans la base de données.")
+        return
+
+    if GUI._State is not True:
+        GUI.launchSampler(entryLabel, code)
+    else:
+        tk.messagebox.showwarning("Opération impossible !", "La détection de visage doit être lancée pour utiliser cette fonction. Veuillez la lancer depuis l'onglet correspondant.")
+
+def supp(label_menu):
+    label = label_menu.get()
+
+    if label != 'Aucun visage enregistré.':
+        if GUI._State is not True: #Ne pas lancer la suppression si la detection n'est pas lancée
+            classes = os.listdir(r'../PERSONS_ALIGNED')
+            if len(classes)  > 2:
+                label_menu['values'] = os.listdir(r'../PERSONS_ALIGNED')
+                GUI.suppress(label)
+            else:
+                tk.messagebox.showwarning("Opération impossible !", "Le ré-entrainement n'autorise pas un nombre de classe inférieur ou égal à 1. Veuillez enregistrer une personne supplémentaire avant d'en supprimer une.")
+
+        else:
+            tk.messagebox.showwarning("Opération impossible !", "La détection de visage doit être lancée pour utiliser cette fonction. Veuillez la lancer depuis l'onglet correspondant.")
+
 
 
 class SettingsView(tk.Frame):

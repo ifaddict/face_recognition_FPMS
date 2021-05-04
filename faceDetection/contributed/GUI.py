@@ -141,7 +141,6 @@ def saveAndClose(visageConf, objetConf, nframes, save=False):
         objectThreshold = float(objetConf)
         faceThreshold = float(visageConf)
         framesOption = int(nframes)
-        print("lel")
         with open('config.conf', 'w') as config:
             config.write('conf_thres=' + str(faceThreshold) + '\n')
             config.write('conf_thres2=' + str(objectThreshold) + '\n')
@@ -285,16 +284,16 @@ def processFrameV2(photo):
                 if faces[0].name is not None:
                     if faces[0].name != "Inconnu":
                         # changeText(frameQueue, "Visage connu detecte")
-                        faceLogs = "Visage Connu détecté"
+                        faceLogs = "Visage connu détecté !"
                         count += 1
                     else:
                         # changeText(frameQueue, "Visage Inconnu, accès refusé")
-                        faceLogs = "visage inconnu accès refusé"
+                        faceLogs = "Visage inconnu. Accès refusé."
                         evaluating = False
                         count = 0
-            else:
+            elif len(faces) > 1:
                 # changeText(frameQueue, "Une seule personne autorisee")
-                faceLogs = "Une seule personne autorisée"
+                faceLogs = "Une seule personne autorisée devant la caméra"
                 count = 0
 
             if count == 10:
@@ -305,7 +304,7 @@ def processFrameV2(photo):
 
         if sampling: #Altered in launchSampler()
             faceLogs = "Sampling..."
-            if len(faces) == 1 and faces[0].name == "Inconnu":
+            if len(faces) == 1:
                 y = faces[0].bounding_box[0]
                 x = faces[0].bounding_box[1]
                 h = faces[0].bounding_box[2]
@@ -342,6 +341,15 @@ def retrain():
     global retrained
     rt.retrain("../model_checkpoints/my_classifier.pkl", "../PERSONS_ALIGNED", "../model_checkpoints/20180408-102900.pb")
     retrained = True
+
+def suppress(label):
+    for file in os.listdir(r'../PERSONS_ALIGNED/' + label):
+        os.remove(r'../PERSONS_ALIGNED/' + label + '/' + file)
+    os.rmdir(r'../PERSONS_ALIGNED/' + label)
+
+    retrain()
+
+
 
 
 def Verification(txt,window):
