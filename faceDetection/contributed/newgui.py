@@ -269,12 +269,6 @@ class ObjectView(tk.Frame):
             listBox.insert(i, label)
         objetsWindow = canvas_console.create_window(185, 250, window= listBox)
 
-        canvas_console.create_text(185, 365, text="Logs", font=self.font, fill= "#000000")
-
-        log_canvas = tk.Canvas(self, width =280, height= 25)
-        log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
-        Console = canvas_console.create_window(185, 425, window=log_canvas)
-
         main.after(5, lambda: self.updateView(state, canvas_title, main, canvas_console, seuil))
     def updateView(self, state, canvas, main, canvas_console, seuil):
         if GUI._State:
@@ -342,59 +336,66 @@ class FaceView(tk.Frame):
             listBox.insert(i, label)
         objetsWindow = canvas_console.create_window(185, 250, window= listBox)
 
-        canvas_console.create_text(185, 365, text="Logs", font=self.font, fill= "#000000")
+        main.after(5, lambda: self.updateView(state, canvas_title, main, canvas_console, seuil))
 
-        log_canvas = tk.Canvas(self, width =280, height= 25)
-        log = log_canvas.create_text(140,12, anchor='center', state='disabled', width =280, text="log", justify='center' )
-        Console = canvas_console.create_window(185, 425, window=log_canvas)
-
-        main.after(5, lambda: self.updateView(state, canvas_title, log_canvas, log, main, canvas_console, seuil))
-
-    def updateView(self, state, canvas, log_canvas, log, main, canvas_console, seuil):
+    def updateView(self, state, canvas, main, canvas_console, seuil):
         if GUI._State:
             canvas.itemconfigure(state, text='Désactivé')
 
         else:
             canvas.itemconfigure(state, text='Activé')
-
-        log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
         canvas_console.itemconfigure(seuil, text=str(GUI.faceThreshold))
 
-        main.after(5, lambda: self.updateView(state, canvas, log_canvas, log, main, canvas_console, seuil))
-class LockView(tk.Frame):
+        main.after(5, lambda: self.updateView(state, canvas, main, canvas_console, seuil))
 
-    def __init__(self,main, parent, controller):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class LockView(tk.Frame):
+    def __init__(self, main, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        canvasTitle = tk.Canvas(self, bg="#ffffff", height=50)  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
-        canvasTitle.create_text(185, 25, text="Évaluer l'accès", font="Helvetica 15 bold", fill="#273ead")  # on ajoute le texte
+        self.font = "Helvetica 14 bold"
+        self.color = "#273ead"
 
-
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_rowconfigure(0, weight=0, minsize=50)
+        self.grid_columnconfigure(0, weight=100)
+        self.grid_rowconfigure(0, weight=1, minsize=100)
         self.grid_rowconfigure(1, weight=20)
         self.grid_rowconfigure(2, weight=70)
-        canvasTitle.grid(row=0, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
 
-        lockFrame = tk.Frame(self, bg="#ffffff", height=400)
-
-
-        btn_gun = Button(lockFrame, borderwidth=0, cursor="hand2", text="Évaluer", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: GUI.launchEvaluator())
-        btn_gun.place(x=130, y=250, anchor=NW, width=120, height=50)
-
-
-        lockFrame.grid(row=1, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
-
-        canvas_console = tk.Canvas(self, width=300, height=50,
+        canvas_title = tk.Canvas(self, width=300, height=50,
                                  bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
+        canvas_title.pack(side='top', fill='both', expand=True)
+        canvas_title.create_text(185, 25, text="Évaluation", font='Helvetica 14 bold', fill=self.color)
 
-        canvas_console.create_text(185, 365, text="Logs", font="Helvetica 13 bold", fill= "#273ead")
+        canvas_console = tk.Canvas(self, width=300, height=750,
+                                   bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
 
-        log_canvas = tk.Canvas(self, width =280, height= 25)
-        log = log_canvas.create_text(140,250, anchor='center', state='disabled', width =280, text="log", justify='center' )
-        Console = canvas_console.create_window(185, 300, window=log_canvas)
+        canvas_console.pack(fill='both', expand=True)
 
+        canvas_console.create_text(185, 365, text="Logs", font=self.font, fill="#000000")
+
+        log_canvas = tk.Canvas(self, width=280, height=25)
+        log = log_canvas.create_text(140, 12, anchor='center', state='disabled', width=280, text="log",
+                                     justify='center')
+        Console = canvas_console.create_window(185, 425, window=log_canvas)
+
+
+        btn_gun = Button(self, borderwidth=0, cursor="hand2", text="Évaluer", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: GUI.launchEvaluator())
+        btn_gun.place(x=130, y=250, anchor=NW, width=120, height=50)
         main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
 
 
@@ -403,6 +404,7 @@ class LockView(tk.Frame):
         log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
 
         main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
+
 class AddView(tk.Frame):
 
     def __init__(self,main, parent, controller):
@@ -415,11 +417,12 @@ class AddView(tk.Frame):
 
 
         self.grid_columnconfigure(0, weight=0, minsize=50)
-        self.grid_rowconfigure(1, weight=5)
-        self.grid_rowconfigure(2, weight=5)
+        self.grid_rowconfigure(1, weight=0, minsize=540)
+        self.grid_rowconfigure(2, weight=0, minsize=150)
+        self.grid_rowconfigure(3, weight=0, minsize=10)
         canvasTitle.grid(row=0, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
 
-        addFrame = tk.Frame(self, bg="#ffffff", height=400)
+        addFrame = tk.Frame(self, bg="#ffffff", height=300)
 
         labelAjout = tk.Label(addFrame, text="Ajouter un membre ", bg="#ffffff", fg="black", font="Helvetica 13 bold")
         labelAjout.place(x=190, y=50, anchor='center')
@@ -465,6 +468,23 @@ class AddView(tk.Frame):
         if label_menu.get() == 'Aucun visage enregistré.':
             btn_supp['state'] = tk.DISABLED
         addFrame.grid(row=1, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
+
+        canvas_console = tk.Canvas(self, width=300, height=25, bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
+        canvas_console.grid(row=2, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
+
+        canvas_console.create_text(175, 20, text="Logs", font="Helvetica 14 bold", fill="#000000")
+        log = canvas_console.create_text(160, 60, anchor='center', state='disabled', width=280, text="log",
+                                     justify='center')
+        main.after(5, lambda: self.updateView(canvas_console, log, main, canvas_console))
+
+
+    def updateView(self, log_canvas, log, main, canvas_console):
+
+        log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
+
+        main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
+
+
 
 
 
