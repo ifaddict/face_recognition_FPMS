@@ -336,7 +336,7 @@ def processFrameV2(photo):
         t3 = time.time()
         #print(f'{source}: Done. ({t3 - t2:.3f}s)')
 
-        if numero == 30 and retrained:
+        if retrained:
             faceLogs = "Resetting model..."
             face_recognition = face.Recognition(faceThreshold)
             retrained = False
