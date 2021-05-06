@@ -29,6 +29,7 @@ _Option = False  # Use to specify that some options changed
 evaluating = False  # Used to check if we need to evaluate the access
 entryLabel = None
 faceLogs = ""
+admin = False #True when access granted
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--weights', nargs='+', type=str, default='testYaya.pt', help='model.pt path(s)')
@@ -246,6 +247,7 @@ def processFrameV2(photo):
     global entryLabel
     global faceLogs
     global faceThreshold
+    global admin
 
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
@@ -297,7 +299,8 @@ def processFrameV2(photo):
                 count = 0
 
             if count == 10:
-                faceLogs = "accès autorisé"
+                faceLogs = "Accès autorisé."
+                admin = True
                 count = 0
                 evaluating = False
 
@@ -322,6 +325,7 @@ def processFrameV2(photo):
                     faceLogs = "Sampling done. Training..."
                     sampling = False
                     threading.Thread(target=retrain, args=()).start()
+                    numero = 0
 
         rt.add_overlays(img, faces, frame_rate)
 
@@ -424,18 +428,26 @@ def switch(cap,photo,model, device, q, entryLabel):
         objetThread = threading.Thread(target = objectDetect, args = (photo,model, device))
         objetThread.start()
 
-def launchFaceDetect(photo):
+def launchFaceDetect(photo,cap):
     global _State
+    cap.release()
+    time.sleep(0.3)
     if _State == True:
         _State = False
         visageThread = threading.Thread(target=processFrameV2, args=(photo,))
         visageThread.start()
 
-def launchObjectDetect(photo,model, device):
-    print("cc")
+def launchObjectDetect(photo,model, device, cap):
     global _State
+    global admin
+
+    if admin is not True :
+        tk.messagebox.showwarning("Opération impossible !",
+                                  "Vous ne pouvez pas utiliser cette fonctionnalité en tant qu'invité. Veuillez vous identifier.")
+        return
     if _State == False:
-        print("cc")
+        cap.release()
+        time.sleep(0.3)
         _State = True
         visageThread = threading.Thread(target=objectDetect, args=(photo,model, device))
         visageThread.start()
@@ -567,6 +579,7 @@ if __name__ == "__main__":
     retrained = False #Use to reboot the model when retrained
     _Option = False #Use to specify that some options changed
     evaluating = False #Used to check if we need to evaluate the access
+
 
     face_recognition = face.Recognition(faceThreshold)
 

@@ -87,9 +87,9 @@ class SampleApp(tk.Tk):
         self.title("EDGE IA")
         self.geometry('1500x900')
         stateText = ""
-        cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(0)
         # On lit la première frame
-        ret, frame = cap.read()
+        ret, frame = self.cap.read()
 
         self.retourCam = frame
         # ►►►► GUI ◄◄◄◄
@@ -100,7 +100,7 @@ class SampleApp(tk.Tk):
         lobby_frame = tk.Frame(content, background="#ffffff", bd=0, relief="sunken")
         view_frame = tk.Frame(content, background="#273ead", bd=0, relief="sunken")
 
-
+        self.cap.release()
         header.grid(row=0, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
         content.grid(row=1, column=0, rowspan=1, sticky='nsew', padx=0, pady=0)
 
@@ -184,8 +184,8 @@ class SampleApp(tk.Tk):
         # ►►►► START ◄◄◄◄
         self.model, self.device = GUI.initialiseYoloV5()
 
-        objetThread = threading.Thread(target=GUI.objectDetect, args=(self.photo, self.model, self.device))
-        objetThread.start()
+        visageThread = threading.Thread(target = GUI.launchFaceDetect, args=(self.photo,self.cap))
+        visageThread.start()
 
         # ►►►► STOP ◄◄◄◄
 
@@ -207,9 +207,14 @@ class SampleApp(tk.Tk):
 
         self.mainloop()
         # ►►►► STOP ◄◄◄◄
-        cap.release()
+        self.cap.release()
 
     def show_frame(self, page_name):
+        if page_name == 'AddView' or page_name == 'SettingsView':
+            if GUI.admin is not True:
+                tk.messagebox.showwarning("Opération impossible !", "Vous n'êtes pas identifié, vous ne pouvez donc pas accéder à cet onglet.")
+                return
+            
         '''Show a frame for the given page name'''
         frame = self.frames[page_name]
         frame.update()
@@ -228,7 +233,7 @@ class ObjectView(tk.Frame):
         self.grid_rowconfigure(1, weight=20)
         self.grid_rowconfigure(2, weight=70)
 
-        canvas_title = tk.Canvas(self,width=300, height=50, bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
+        canvas_title = tk.Canvas(self,width=300, height=50, bg='white')  
         canvas_title.pack(side='top', fill='both', expand=True)
         canvas_title.create_text(185, 25, text="Detection d'objets dangereux", font='Helvetica 14 bold', fill =self.color)
         controller.update()
@@ -239,7 +244,7 @@ class ObjectView(tk.Frame):
 
         canvas_title.create_text(35, 40, text="Etat", font='Helvetica 14 bold', fill ='#000000')
         btn_gun = Button(self, borderwidth=0, cursor="hand2", text="Activer", bg="#273ead", fg="white",
-                         font="Helvetica 13 bold", command=lambda: GUI.launchObjectDetect(controller.photo, controller.model, controller.device))
+                         font="Helvetica 13 bold", command=lambda: GUI.launchObjectDetect(controller.photo, controller.model, controller.device, main.cap))
         btn_gun.place(x=185, y=200, anchor='center', width=120, height=50)
 
         if GUI._State:
@@ -297,7 +302,6 @@ class FaceView(tk.Frame):
         canvas_title = tk.Canvas(self,width=300, height=50, bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
         canvas_title.pack(side='top', fill='both', expand=True)
         canvas_title.create_text(185, 25, text="Detection de visages", font='Helvetica 14 bold', fill =self.color)
-        controller.update()
 
         canvas_title = tk.Canvas(self, width=300, height=200,
                                  bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
@@ -309,7 +313,7 @@ class FaceView(tk.Frame):
             etat = 'Activé'
         canvas_title.create_text(35, 40, text="Etat", font='Helvetica 14 bold', fill ='#000000')
         btn_gun = Button(self, borderwidth=0, cursor="hand2", text="Activer", bg="#273ead", fg="white",
-                         font="Helvetica 13 bold", command=lambda: GUI.launchFaceDetect(controller.photo))
+                         font="Helvetica 13 bold", command=lambda: GUI.launchFaceDetect(controller.photo, main.cap))
         btn_gun.place(x=185, y=200, anchor='center', width=120, height=50)
 
         state = canvas_title.create_text(190, 80, anchor='center', width=300,font=self.font, text=etat, justify='center')
@@ -353,16 +357,6 @@ class FaceView(tk.Frame):
 
 
 
-
-
-
-
-
-
-
-
-
-
 class LockView(tk.Frame):
     def __init__(self, main, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -376,7 +370,7 @@ class LockView(tk.Frame):
         self.grid_rowconfigure(1, weight=20)
         self.grid_rowconfigure(2, weight=70)
 
-        canvas_title = tk.Canvas(self, width=300, height=50,
+        canvas_title = tk.Canvas(self, width=300, height=20,
                                  bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
         canvas_title.pack(side='top', fill='both', expand=True)
         canvas_title.create_text(185, 25, text="Évaluation", font='Helvetica 14 bold', fill=self.color)
@@ -396,7 +390,12 @@ class LockView(tk.Frame):
 
         btn_gun = Button(self, borderwidth=0, cursor="hand2", text="Évaluer", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: GUI.launchEvaluator())
         btn_gun.place(x=130, y=250, anchor=NW, width=120, height=50)
+        
+        btn_logout =  Button(self, borderwidth=0, cursor="hand2", text="Déconnexion", bg="#273ead", fg="white", font="Helvetica 13 bold", command=lambda: self.deco())
+        btn_logout.place(x=130, y=400, anchor=NW, width=120, height=50)
         main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
+        
+
 
 
     def updateView(self, log_canvas, log, main, canvas_console):
@@ -404,6 +403,11 @@ class LockView(tk.Frame):
         log_canvas.itemconfigure(log, text=str(GUI.faceLogs))
 
         main.after(5, lambda: self.updateView(log_canvas, log, main, canvas_console))
+        
+    def deco(self):
+        GUI.admin = False
+        GUI.faceLogs = 'Déconnecté'
+        
 
 class AddView(tk.Frame):
 
@@ -429,12 +433,12 @@ class AddView(tk.Frame):
 
         labelName = tk.Label(addFrame, text="Label : ", bg="#ffffff", fg="black", font="Helvetica 13 bold")
         labelName.place(x=30, y=87)
-        entryLabel = tk.ttk.Entry(addFrame, width=35)
+        entryLabel = tk.ttk.Entry(addFrame, width=30)
         entryLabel.place(x=120, y=90)
 
         code = tk.Label(addFrame, text="Code : ", bg="#ffffff", fg="black", font="Helvetica 13 bold")
         code.place(x=30, y=127)
-        entryCode = tk.ttk.Entry(addFrame, width=35, show="*")
+        entryCode = tk.ttk.Entry(addFrame, width=30, show="*")
         entryCode.place(x=120, y=130)
 
 
@@ -538,7 +542,7 @@ class SettingsView(tk.Frame):
         objetCombo = ttk.Combobox(optionsFrame, values=objectsThreshHolds)
         currentConf = str(GUI.objectThreshold)
         objetCombo.current(objectsThreshHolds.index(currentConf))
-        objetCombo.place(x=150, y=90)
+        objetCombo.place(x=160, y=90)
 
         objetLabel = tk.Label(optionsFrame, text="Seul de confiance \nDétection d'objets", bg="#ffffff")
         objetLabel.place(x=30, y=80)
@@ -548,7 +552,7 @@ class SettingsView(tk.Frame):
         visageCombo = ttk.Combobox(optionsFrame, values=threshHolds)
         currentConf = str(GUI.faceThreshold)
         visageCombo.current(threshHolds.index(currentConf))
-        visageCombo.place(x=150, y=150)
+        visageCombo.place(x=160, y=150)
 
         visageLabel = tk.Label(optionsFrame, text="Seul de confiance \nDétection visages", bg="#ffffff")
         visageLabel.place(x=30, y=140)
@@ -634,6 +638,7 @@ if __name__ == '__main__':
     retrained = False #Use to reboot the model when retrained
     _Option = False #Use to specify that some options changed
     evaluating = False #Used to check if we need to evaluate the access
+
 
     # face_recognition = face.Recognition(GUI.faceThreshold)
     app = SampleApp()
