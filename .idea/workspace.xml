@@ -22,6 +22,10 @@
     <list default="true" id="d8938e15-c965-41ea-aa3b-36c9e1d40323" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/GUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/config.conf" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/config.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/newgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/newgui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/real_time_face_recognition.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/real_time_face_recognition.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/faceDetection/contributed/utils/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/contributed/utils/datasets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/faceDetection/model_checkpoints/my_classifier.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/faceDetection/model_checkpoints/my_classifier.pkl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -61,7 +65,7 @@
       <recent name="C:\Users\ifadd\Desktop\projetIA\face_recognition_FPMS\YOLO-object-detection-with-OpenCV-master\yolo-coco" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.GUI">
+  <component name="RunManager" selected="Python.newgui">
     <configuration name="GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="face_recognition_FPMS" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -76,6 +80,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/faceDetection/contributed/GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="newgui" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="face_recognition_FPMS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/faceDetection/contributed" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/faceDetection/contributed/newgui.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -108,6 +134,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.newgui" />
         <item itemvalue="Python.GUI" />
         <item itemvalue="Python.objectDetector" />
       </list>
@@ -123,6 +150,7 @@
       <updated>1614257806685</updated>
       <workItem from="1619438484923" duration="472000" />
       <workItem from="1619561213608" duration="4589000" />
+      <workItem from="1620579074241" duration="1530000" />
     </task>
     <servers />
   </component>
@@ -142,6 +170,7 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/face_recognition_FPMS$newgui.coverage" NAME="newgui Coverage Results" MODIFIED="1620579773958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/faceDetection/contributed" />
     <SUITE FILE_PATH="coverage/face_recognition_FPMS$GUI.coverage" NAME="GUI Coverage Results" MODIFIED="1619640297209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/faceDetection/contributed" />
   </component>
 </project>

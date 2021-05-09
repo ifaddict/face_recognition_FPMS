@@ -275,7 +275,8 @@ class LoadStreams:  # multiple IP or RTSP cameras
         for i, s in enumerate(sources):
             # Start the thread to read frames from the video stream
             print(f'{i + 1}/{n}: {s}... ', end='')
-            self.cap = cv2.VideoCapture(eval(s) if s.isnumeric() else s)
+            self.cap = cv2.VideoCapture(1)
+            print(self.cap.getBackendName())
             assert self.cap.isOpened(), f'Failed to open {s}'
             w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -294,16 +295,11 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
     def update(self, index, cap):
         # Read next stream frame in a daemon thread
-        n = 0
+
         while cap.isOpened():
-            n += 1
-            # _, self.imgs[index] = cap.read()
-            cap.grab()
-            if n == 4:  # read every 4th frame
-                success, im = cap.retrieve()
-                self.imgs[index] = im if success else self.imgs[index] * 0
-                n = 0
-            time.sleep(0.01)  # wait time
+            success, im = cap.read()
+            self.imgs[index] = im if success else self.imgs[index] * 0
+            time.sleep(0.02)  # wait time
 
     def __iter__(self):
         self.count = -1

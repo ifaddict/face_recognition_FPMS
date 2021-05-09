@@ -6,22 +6,10 @@ from PIL import Image
 from PIL import ImageTk
 import argparse
 import os
-import random
-import time
-import tkinter.messagebox
-import numpy as np
-import real_time_face_recognition as rt
-import threading, queue
-import face
-import torch
-import torch.backends.cudnn as cudnn
-from glob import glob
 
-from models.experimental import attempt_load
-from utils.datasets import LoadStreams
-from utils.general import check_img_size, check_imshow, non_max_suppression, scale_coords, set_logging
-from utils.plots import plot_one_box
-from utils.torch_utils import select_device, time_synchronized
+import tkinter.messagebox
+
+import threading
 import GUI
 
 
@@ -87,11 +75,14 @@ class SampleApp(tk.Tk):
         self.title("EDGE IA")
         self.geometry('1500x900')
         stateText = ""
-        self.cap = cv2.VideoCapture(0)
+        print('lol')
+        self.cap = cv2.VideoCapture(cv2.CAP_ANY)
+        print(self.cap.getBackendName())
         # On lit la première frame
         ret, frame = self.cap.read()
-
+        print('lol2')
         self.retourCam = frame
+        print('lol3')
         # ►►►► GUI ◄◄◄◄
         header = tk.Frame(self, background="#273ead", bd=0, relief ="sunken", padx=20, pady=20)
         content = tk.Frame(self, bd =0, relief ="sunken")
@@ -184,7 +175,8 @@ class SampleApp(tk.Tk):
         # ►►►► START ◄◄◄◄
         self.model, self.device = GUI.initialiseYoloV5()
 
-        visageThread = threading.Thread(target = GUI.launchFaceDetect, args=(self.photo,self.cap))
+
+        visageThread = threading.Thread(target = GUI.processFrameV2, args=(self.photo,))
         visageThread.start()
 
         # ►►►► STOP ◄◄◄◄

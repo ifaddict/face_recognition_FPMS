@@ -148,9 +148,6 @@ def add_overlays(frame, faces, frame_rate):
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                             thickness=2, lineType=2)
 
-    cv2.putText(frame, str(frame_rate) + " fps", (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
-                thickness=2, lineType=2)
 
 
 def processFrame(root, video_capture, photo, face_recognition, q):

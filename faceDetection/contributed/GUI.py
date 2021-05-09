@@ -22,7 +22,7 @@ from utils.general import check_img_size, check_imshow, non_max_suppression, sca
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, time_synchronized
 
-_State = True  # Use to identify if object or faces are processed.
+_State = False  # Use to identify if object or faces are processed.
 sampling = False  # Use to alert that a retraining of the visage model is requested.
 retrained = False  # Use to reboot the model when retrained
 _Option = False  # Use to specify that some options changed
