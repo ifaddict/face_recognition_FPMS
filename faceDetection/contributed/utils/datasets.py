@@ -275,8 +275,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         for i, s in enumerate(sources):
             # Start the thread to read frames from the video stream
             print(f'{i + 1}/{n}: {s}... ', end='')
-            self.cap = cv2.VideoCapture(1)
-            print(self.cap.getBackendName())
+            self.cap = cv2.VideoCapture(cv2.CAP_ANY)
             assert self.cap.isOpened(), f'Failed to open {s}'
             w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))

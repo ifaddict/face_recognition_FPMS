@@ -248,6 +248,7 @@ def processFrameV2(photo):
     global faceLogs
     global faceThreshold
     global admin
+    global framesOption
 
     time.sleep(0.2)
     frame_interval = 3  # Number of frames after which to run face detection
@@ -321,7 +322,7 @@ def processFrameV2(photo):
                 im.save(samplesPath + str(numero) + ".png")
                 numero += 1
                 faceLogs = "Saved"
-                if numero == 30:
+                if numero == framesOption:
                     faceLogs = "Sampling done. Training..."
                     sampling = False
                     threading.Thread(target=retrain, args=()).start()

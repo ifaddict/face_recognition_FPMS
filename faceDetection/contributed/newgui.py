@@ -195,7 +195,7 @@ class SampleApp(tk.Tk):
             # will be the one that is visible.
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("ObjectView")
+        self.show_frame("FaceView")
 
         self.mainloop()
         # ►►►► STOP ◄◄◄◄
@@ -465,11 +465,11 @@ class AddView(tk.Frame):
             btn_supp['state'] = tk.DISABLED
         addFrame.grid(row=1, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
 
-        canvas_console = tk.Canvas(self, width=300, height=25, bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
+        canvas_console = tk.Canvas(self, width=280, height=25, bg='white')  # le canvas, il faut régler sa taille pour qu'il occupe toute la fenêtre
         canvas_console.grid(row=2, column=0, rowspan=1, sticky="nsew", padx=0, pady=0)
 
         canvas_console.create_text(175, 20, text="Logs", font="Helvetica 14 bold", fill="#000000")
-        log = canvas_console.create_text(160, 60, anchor='center', state='disabled', width=280, text="log",
+        log = canvas_console.create_text(175, 75, anchor='center', state='disabled', width=280, text="log",
                                      justify='center')
         main.after(5, lambda: self.updateView(canvas_console, log, main, canvas_console))
 
@@ -536,7 +536,7 @@ class SettingsView(tk.Frame):
         objetCombo.current(objectsThreshHolds.index(currentConf))
         objetCombo.place(x=160, y=90)
 
-        objetLabel = tk.Label(optionsFrame, text="Seul de confiance \nDétection d'objets", bg="#ffffff")
+        objetLabel = tk.Label(optionsFrame, text="Seuil de confiance \nDétection d'objets", bg="#ffffff")
         objetLabel.place(x=30, y=80)
 
 
@@ -546,7 +546,7 @@ class SettingsView(tk.Frame):
         visageCombo.current(threshHolds.index(currentConf))
         visageCombo.place(x=160, y=150)
 
-        visageLabel = tk.Label(optionsFrame, text="Seul de confiance \nDétection visages", bg="#ffffff")
+        visageLabel = tk.Label(optionsFrame, text="Seuil de confiance \nDétection visages", bg="#ffffff")
         visageLabel.place(x=30, y=140)
 
 
@@ -555,6 +555,7 @@ class SettingsView(tk.Frame):
               label='Nombre de frames pour le ré-entrainement', background='white', bd=0)
 
         framesScale.place(x=55, y=230)
+        framesScale.set(GUI.framesOption)
 
 
 
